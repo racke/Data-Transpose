@@ -1,0 +1,75 @@
+NAME
+    Data::Transpose - Transpose, filter and validate data
+
+VERSION
+    Version 0.001
+
+SYNOPSIS
+        use Data::Transpose;
+
+        my $tp = Data::Transpose->new;
+
+METHODS
+  new
+    Parameters for the constructor are:
+
+    unknown
+        Determines how to treat fields in the input hash which are not known
+        to the Data::Transpose object:
+
+        fail
+            The transpose operation fails.
+
+        pass
+            Unknown fields in the input hash appear in the output hash. This
+            is the default behaviour.
+
+        skip
+            Unknown fields in the input hash don't appear in the output
+            hash.
+
+  field
+    Add a new field object and returns it:
+
+        $tp->field('email');
+
+  transpose
+AUTHOR
+    Stefan Hornburg (Racke), `<racke at linuxia.de>'
+
+BUGS
+    Please report any bugs or feature requests to `bug-data-transpose at
+    rt.cpan.org', or through the web interface at
+    http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Data-Transpose. I will be
+    notified, and then you'll automatically be notified of progress on your
+    bug as I make changes.
+
+SUPPORT
+    You can find documentation for this module with the perldoc command.
+
+        perldoc Data::Transpose
+
+    You can also look for information at:
+
+    * RT: CPAN's request tracker (report bugs here)
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Data-Transpose
+
+    * AnnoCPAN: Annotated CPAN documentation
+        http://annocpan.org/dist/Data-Transpose
+
+    * CPAN Ratings
+        http://cpanratings.perl.org/d/Data-Transpose
+
+    * Search CPAN
+        http://search.cpan.org/dist/Data-Transpose/
+
+ACKNOWLEDGEMENTS
+LICENSE AND COPYRIGHT
+    Copyright 2012 Stefan Hornburg (Racke).
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of either: the GNU General Public License as published
+    by the Free Software Foundation; or the Artistic License.
+
+    See http://dev.perl.org/licenses/ for more information.
+

@@ -1,0 +1,15 @@
+Changes
+lib/Data/Transpose.pm
+lib/Data/Transpose/Field.pm
+Makefile.PL
+MANIFEST			This list of files
+MANIFEST.SKIP
+README
+t/00-load.t
+t/filter-with-sub.t
+t/manifest.t
+t/pod-coverage.t
+t/pod.t
+t/transpose-simple.t
+t/transpose-unknown.t
+

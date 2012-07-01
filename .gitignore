@@ -1,0 +1,10 @@
+# Backup files
+*.bak
+*.old
+# Perl build files
+Makefile
+MYMETA.*
+blib
+pm_to_blib
+# Dist files
+*.tar.gz
