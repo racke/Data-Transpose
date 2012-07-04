@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Data::Transpose::Field;
+use Data::Transpose::Group;
 
 =head1 NAME
 
@@ -100,6 +101,25 @@ sub field {
 
     push @{$self->{fields}}, $object;
 
+    return $object;
+}
+
+=head2 group
+
+Add a new group object and return it:
+
+    $tp->group('fullname', $tp->field('firstname'), $tp->field('lastname'));
+
+=cut
+
+sub group {
+    my ($self, $name, @objects) = @_;
+    
+    my $object = Data::Transpose::Group->new(name => $name,
+                                             objects => \@objects);
+
+    push @{$self->{fields}}, $object;
+    
     return $object;
 }
 
