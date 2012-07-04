@@ -43,7 +43,7 @@ $g = $tp->group('baz',
            $tp->field('foo'),
            $tp->field('bar'),
     );
-$g->transpose('foobar');
+$g->target('foobar');
 
 $output = $tp->transpose({foo => 'my', bar => 'name'});
 

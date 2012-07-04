@@ -125,27 +125,27 @@ sub value {
     return $self->{output};
 }
 
-=head2 transpose
+=head2 target
 
-Set target name for transpose operation:
+Set target name for target operation:
 
-    $group->transpose('name');
+    $group->target('name');
 
 Get target name:
 
-    $group->transpose;
+    $group->target;
     
 =cut
 
-sub transpose {
+sub target {
     my ($self, $name) = @_;
 
     if (defined $name) {
-        $self->{transpose} = $name;
+        $self->{target} = $name;
         return $self;
     }
 
-    return $self->{transpose};
+    return $self->{target};
 }
 
 =head1 LICENSE AND COPYRIGHT

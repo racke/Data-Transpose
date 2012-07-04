@@ -71,19 +71,19 @@ sub value {
     return $self->{output};
 }
 
-=head2 transpose
+=head2 target
 
 =cut
 
-sub transpose {
+sub target {
     my ($self, $name) = @_;
 
     if (defined $name) {
-        $self->{transpose} = $name;
+        $self->{target} = $name;
         return $self;
     }
 
-    return $self->{transpose};
+    return $self->{target};
 }
 
 =head2 filter

@@ -12,7 +12,7 @@ my ($tp, $f, $output);
 
 $tp = Data::Transpose->new;
 $f = $tp->field('foo');
-$f->transpose('bar');
+$f->target('bar');
 $output = $tp->transpose({foo => 6});
 
 ok(exists $output->{bar} && $output->{bar} == 6,

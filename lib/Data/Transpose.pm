@@ -144,7 +144,7 @@ sub transpose {
             $weed_value = $fld->value;
         }
 
-        if ($new_name = $fld->transpose) {
+        if ($new_name = $fld->target) {
             $new_record{$new_name} = $weed_value;
         }
         else {
