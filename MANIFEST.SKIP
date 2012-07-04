@@ -1,2 +1,5 @@
+\.bak$
+\.old$
+\.tar.gz$
 .git
 .gitignore
