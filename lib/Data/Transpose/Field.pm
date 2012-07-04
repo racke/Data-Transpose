@@ -5,12 +5,18 @@ use warnings;
 
 =head1 NAME
 
-Data::Transpose::Field
+Data::Transpose::Field - Field class for Data::Transpose
+
+=head1 SYNOPSIS
+
+     $field = $tp->field('email');
 
 =head1 METHODS
 
 =head2 new
 
+    $field = Data::Transpose::Field->new(name => 'email');
+    
 =cut
 
 sub new {
@@ -36,6 +42,14 @@ sub new {
 }
 
 =head2 name
+
+Set name of the field:
+
+    $field->name('fullname');
+
+Get name of the field:
+
+    $field->name;
 
 =cut
 
@@ -72,6 +86,14 @@ sub value {
 }
 
 =head2 target
+
+Set target name for target operation:
+
+    $field->target('name');
+
+Get target name:
+
+    $field->target;
 
 =cut
 
