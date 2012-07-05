@@ -119,7 +119,9 @@ sub value {
     else {
         # combine field values
         $self->{output} = CORE::join($self->join,
-                                     map {$_->value} @{$self->{objects}});
+                                     map {my $value = $_->value;
+                                          defined $value ? $value : '';
+                                     } @{$self->{objects}});
     }
     
     return $self->{output};
