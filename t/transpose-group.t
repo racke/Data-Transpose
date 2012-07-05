@@ -3,7 +3,8 @@
 use strict;
 use warnings;
 
-use Test::More tests => 3;
+use Test::More tests => 4;
+use Test::Warn;
 
 use Data::Transpose;
 use Data::Dumper;
@@ -50,3 +51,16 @@ $output = $tp->transpose({foo => 'my', bar => 'name'});
 ok (exists $output->{foobar} && $output->{foobar} eq 'my name',
     'simple transpose group test with transpose set')
     || diag "Transpose output: " . Dumper($output);
+
+# ensure that joining emits no warning
+$tp = Data::Transpose->new;
+$g = $tp->group('baz',
+           $tp->field('foo'),
+           $tp->field('bar'),
+    );
+$g->target('foobar');
+
+warnings_are {$output = $tp->transpose({foo => undef, bar => 'name'})} [],
+    'transpose group test with undefined values';
+
+
