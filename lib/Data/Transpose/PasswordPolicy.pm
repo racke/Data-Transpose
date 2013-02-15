@@ -3,7 +3,7 @@ package Data::Transpose::PasswordPolicy;
 use 5.010001;
 use strict;
 use warnings;
-use Data::Dumper;
+# use Data::Dumper;
 
 our $VERSION = '0.02';
 
