@@ -707,12 +707,12 @@ sub _enable_or_disable_check {
 
     if (@args) {
 	foreach my $what (@args) {
-	    $self->get_or_set_disable($what, $action);
+	    $self->_get_or_set_disable($what, $action);
 	}
     }
 }
 
-=head2 $obj->is_disable("checking")
+=head2 $obj->is_disabled("checking")
 
 Return true if the checking is disable.
 
@@ -721,10 +721,10 @@ Return true if the checking is disable.
 sub is_disabled {
     my $self = shift;
     my $check = shift;
-    return $self->get_or_set_disable($check);
+    return $self->_get_or_set_disable($check);
 }
 
-sub get_or_set_disable {
+sub _get_or_set_disable {
     my ($self, $what, $action) = @_;
     return undef unless $what;
     unless ($action) {
