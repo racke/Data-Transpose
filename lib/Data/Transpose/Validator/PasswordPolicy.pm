@@ -3,11 +3,12 @@ package Data::Transpose::Validator::PasswordPolicy;
 
 use strict;
 use warnings;
-use base 'Data::Transpose::Validator::Base';
-use Data::Transpose::PasswordPolicy;
+use base 'Data::Transpose::PasswordPolicy';
 
 sub is_valid {
-    return 1;
+    my ($self, $password) = @_;
+    $self->password($password);
+    return $self->SUPER::is_valid;
 }
 
 1;

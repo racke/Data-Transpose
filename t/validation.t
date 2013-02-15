@@ -50,7 +50,8 @@ $form->prepare(country => {type => 'String'});
 # here $clean is meant to be fully validated, or nothing
 my $clean = $form->transpose($dirty);
 
-print Dumper($form);
 if ($clean) {
     print Dumper($clean);
+} else {
+    print Dumper($form->errors);
 }

@@ -101,7 +101,7 @@ Accessor to set or retrieve the errors.
 sub errors {
     my ($self, $field, $error) = @_;
     if ($error) {
-        $self->{errors} = {} unless $self->{error};
+        $self->{errors} = {} unless $self->{errors};
         $self->{errors}->{$field} = $error;
     }
     return $self->{errors};
