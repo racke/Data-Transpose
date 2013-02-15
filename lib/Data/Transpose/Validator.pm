@@ -83,7 +83,7 @@ sub transpose {
     foreach my $k (keys %$hash) {
         my $obj = $self->_build_object($k);
         unless ($obj->is_valid($hash->{$k})) {
-            $self->errors($obj->error)
+            $self->errors($k, $obj->error)
         }
     }
     # do other stuff, check the options, filter, set  and return it
@@ -99,11 +99,10 @@ Accessor to set or retrieve the errors.
 =cut
 
 sub errors {
-    my $self = shift;
-    my $error = shift;
+    my ($self, $field, $error) = @_;
     if ($error) {
-        $self->{errors} = [] unless $self->{error};
-        push @{$self->{errors}}, $error;
+        $self->{errors} = {} unless $self->{error};
+        $self->{errors}->{$field} = $error;
     }
     return $self->{errors};
 }
