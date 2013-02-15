@@ -13,11 +13,11 @@ Data::Transpose - Transpose, filter and validate data
 
 =head1 VERSION
 
-Version 0.001
+Version 0.003
 
 =cut
 
-our $VERSION = '0.0002';
+our $VERSION = '0.0003';
 
 =head1 SYNOPSIS
 
@@ -214,7 +214,7 @@ L<http://search.cpan.org/dist/Data-Transpose/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012 Stefan Hornburg (Racke).
+Copyright 2012-2013 Stefan Hornburg (Racke).
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

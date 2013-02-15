@@ -144,7 +144,7 @@ Uwe Voelker <uwe@uwevoelker.de>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012 Uwe Voelker <uwe@uwevoelker.de>.
+Copyright 2012-2013 Uwe Voelker <uwe@uwevoelker.de>.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

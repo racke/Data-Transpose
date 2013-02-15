@@ -1,5 +1,9 @@
 Revision history for Data::Transpose
 
+0.0003
+
+    * Added documentation
+
 0.0002
 
     * Added Data::Transpose::EmailValid and Data::Transpose::PasswordPolicy

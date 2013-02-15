@@ -2,7 +2,7 @@ NAME
     Data::Transpose - Transpose, filter and validate data
 
 VERSION
-    Version 0.001
+    Version 0.003
 
 SYNOPSIS
         use Data::Transpose;
@@ -32,6 +32,11 @@ METHODS
     Add a new field object and returns it:
 
         $tp->field('email');
+
+  group
+    Add a new group object and return it:
+
+        $tp->group('fullname', $tp->field('firstname'), $tp->field('lastname'));
 
   transpose
 AUTHOR
@@ -65,7 +70,7 @@ SUPPORT
 
 ACKNOWLEDGEMENTS
 LICENSE AND COPYRIGHT
-    Copyright 2012 Stefan Hornburg (Racke).
+    Copyright 2012-2013 Stefan Hornburg (Racke).
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of either: the GNU General Public License as published
