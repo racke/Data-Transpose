@@ -213,10 +213,11 @@ sub transpose {
             my @errors = $obj->error;
             $self->errors($field, \@errors)
         }
+        $output{$field} = $value;
     }
     # do other stuff, check the options, filter, set  and return it
     return if $self->errors;
-    return $hash;
+    return \%output;
 }
 
 
