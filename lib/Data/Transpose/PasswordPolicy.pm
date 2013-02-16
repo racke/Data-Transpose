@@ -334,7 +334,7 @@ Disable keyword: C<username>
 # check if the password doesn't contain the username
 sub password_has_username {
     my $self = shift;
-    return "Missing username" unless $self->username;
+    return [ username => "Missing username" ] unless $self->username;
 
     my $match = _leet_string_match($self->password, $self->username);
     if ($match) {
