@@ -5,7 +5,7 @@ use warnings;
 use Data::Transpose::Validator;
 use Data::Dumper;
 
-# use Test::More tests => 4;
+use Test::More tests => 1;
 
 
 # failing test which should illustrate the usage
@@ -16,33 +16,38 @@ my $dirty = {
              country => "  "
             };
 
+# set the options
 my $form = Data::Transpose::Validator->new(stripwhite => 1);
 
-
-$form->prepare(
+my %schema = (
                email => {
                          type => 'EmailValid',
                          required => 1,
-                                   # option to pass to the class
-                                   # Data::Transpose::Validator::Type,
-                                   # which in turn will call is_valid
-                         options => {
-                                     option1 => 1,
-                                     option2 => 2,
-                                    },
+                         # option to pass to the class
+                         # Data::Transpose::Validator::Type,
+                         # which in turn will call is_valid
+                         typeoptions => {
+                                         option1 => 1,
+                                         option2 => 2,
+                                        },
                          message => "Failed for those reason"
                         },
                password => {
                             type => 'PasswordPolicy',
                             required => 0,
+                            typeoptions => {
+                                            a => 1,
+                                            b => 2,
+                                           },
                             options => {
-                                        a => 1,
-                                        b => 2,
+                                        stripwhite => 0,
                                        }
                            },
-              );
+             );
 
-# add more
+$form->prepare(%schema);
+
+# add more, if you want
 
 $form->prepare(country => {type => 'String'});
 
