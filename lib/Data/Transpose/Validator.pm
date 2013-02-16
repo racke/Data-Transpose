@@ -6,6 +6,7 @@ use Module::Load;
 use Try::Tiny;
 use Storable qw/dclone/;
 use Data::Dumper;
+use Data::Transpose::Validator::Subrefs;
 
 =head2 new
 
@@ -45,11 +46,7 @@ sub prepare {
     if (@_ == 1) {
         # we have an array;
         my $arrayref = shift;
-
-        # to play on the safe side, make a deep copy
-        my $array = dclone($arrayref);
-
-        foreach my $field (@$array) {
+        foreach my $field (@$arrayref) {
             my $fieldname = $field->{name};
             die qq{Wrong usage! When an array is passed, "name" must be set!}
               unless $fieldname;
@@ -159,16 +156,36 @@ sub _build_object {
 
     my $params = $self->field($field); # retrieve the conf
 
-    my $submodule = $params->{type} || "Base";
+    my $validator = $params->{validator};
+    my $type = ref($validator);
+
+    # if we got a string, the class is Data::Transpose::$string
+    my $class;
     my $options = $params->{options} || {};
-    my $class = __PACKAGE__ .'::'.$submodule;
+
     my $obj;
-    try {
-        $obj = $class->new(%$options);
-    } catch {
-        load $class;
-        $obj = $class->new(%$options);
-    };
+    if ($type eq 'CODE') {
+        $obj = Data::Transpose::Validator::Subrefs->new($validator);
+    }
+    else {
+        if ($type eq '') {
+            my $module = $validator || "Base";
+            $class = __PACKAGE__ . '::' . $module;
+        }
+        elsif ($type eq 'HASH') {
+            $class = $validator->{class};
+            die "Missing class for $field\n" unless $class;
+        }
+        else {
+            die "Wron usage. Pass a string, an hashref or a sub!\n";
+        }
+        try {
+            $obj = $class->new(%$options);
+        } catch {
+            load $class;
+            $obj = $class->new(%$options);
+        };
+    }
     $self->{objects}->{$field} = $obj; # hold it
     return $obj;
 }

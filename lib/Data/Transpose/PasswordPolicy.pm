@@ -4,6 +4,8 @@ use 5.010001;
 use strict;
 use warnings;
 # use Data::Dumper;
+use base 'Data::Transpose::Validator::Base';
+
 
 our $VERSION = '0.02';
 
@@ -669,36 +671,9 @@ password.
 In list context, we pass the array with the error codes and the strings.
 In scalar context, we return the concatenated error strings.
 
+Inherited from Data::Transpose::Validator::Base;
+
 =cut
-
-
-sub error {
-    my ($self, $error) = @_;
-    if ($error) {
-        my $array;
-        if (ref($error) eq "") {
-            $array = [ $error => $error ];
-        }
-        elsif (ref($error) eq 'ARRAY') {
-            $array = $error;
-        }
-        else {
-            die "Wrong usage: error accepts strings or arrayrefs\n";
-        }
-	# warn "Setting $error";
-        if (defined $self->{error}) {
-	    push @{$self->{error}}, $error;
-	} else {
-	    $self->{error} = [ $error ];
-	}
-    }
-    return unless defined $self->{error};
-    my @errors = @{$self->{error}};
-
-    my $errorstring = join("; ", map { $_->[1] } @errors);
-    # in scalar context, we stringify
-    return wantarray ? @errors : $errorstring;
-}
 
 =head2 error_codes
 
@@ -710,15 +685,6 @@ If you want the verbose string, you need the C<error> method.
 =cut
 
 
-sub error_codes {
-    my $self = shift;
-    my @errors = $self->error;
-    my @out;
-    for (@errors) {
-        push @out, $_->[0];
-    }
-    return @out;
-}
 
 
 =head2 $obj->reset_errors
@@ -726,12 +692,6 @@ sub error_codes {
 Clear the object from previous errors, in case you want to reuse it.
 
 =cut
-
-
-sub reset_errors {
-    my $self = shift;
-    $self->{error} = undef;
-}
 
 =head2 $obj->disable("mixed", "letters", "digits", [...])
 

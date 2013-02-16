@@ -14,6 +14,7 @@ my $dirty = {
              email => "i'm\@broken",
              password => "1234",
              country => "  ",
+             custom => "hello",
              email2 => "hello",
              country2 => "ciao",
             };
@@ -57,14 +58,28 @@ $form->prepare(%sc);
 
 # add more, if you want, as an arrayref (will keep the sorting);
 
+my $customvalidator = sub {
+    my $field = shift;
+    return ($field, undef) if $field =~ m/\w/;
+    return (undef, "My error");
+};
+
 $form->prepare([
+                { name => "country" ,
+                  required => 1,
+                  validator => $customvalidator,
+                },
+                { name => "custom",
+                  required => 1,
+                  validator => $customvalidator,
+                },
                 {
                  name => "country2",
                  validator => 'String'},
                 {
                  name => "email2",
                  validator => "EmailValid"
-                }
+                },
                ]
               );
 
@@ -77,4 +92,6 @@ if ($clean) {
 } else {
     print Dumper($form->errors);
 }
-print Dumper($form);
+# print Dumper($form);
+
+ok($form->errors);

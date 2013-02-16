@@ -3,6 +3,8 @@ package Data::Transpose::EmailValid;
 use strict;
 use warnings;
 
+use base 'Data::Transpose::Validator::Base';
+
 use Email::Valid;
 
 
@@ -60,14 +62,6 @@ sub email_valid {
     return $self->{email_valid};
 }
 
-sub error {
-    my ($self, $error) = @_;
-    if (defined $error) {
-        $self->{error} = $error;
-    }
-    return $self->{error};
-}
-
 sub input {
     my ($self, $input) = @_;
     if (defined $input) {
@@ -86,7 +80,6 @@ sub output {
 
 }
 
-
 =head2 reset_all 
 
 Clear all the internal data
@@ -96,7 +89,8 @@ Clear all the internal data
 
 sub reset_all {
     my $self = shift;
-    foreach (qw/error input output/) {
+    $self->reset_errors;
+    foreach (qw/input output/) {
         delete $self->{$_} if exists $self->{$_}
     }
 }
