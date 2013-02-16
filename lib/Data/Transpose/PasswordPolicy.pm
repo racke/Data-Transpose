@@ -88,9 +88,17 @@ credentials provided as hashref.
 =cut
 
 sub new {
-    my $class = shift;
-    my $new = shift;
+    my ($class, @args) = @_;
     my $self = {};
+    my $new;
+    if (@args % 2 == 0) {
+        my %opts = @args;
+        $new = \%opts
+    }
+    else {
+        $new = shift(@args);
+    }
+
     if ($new and (ref($new) eq 'HASH')) {
 	foreach my $par (qw/username password/) {
 	    if ($new->{$par}) {
