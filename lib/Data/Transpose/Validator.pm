@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use Module::Load;
 use Try::Tiny;
-use Storable qw/dclone/;
 use Data::Dumper;
 use Data::Transpose::Validator::Subrefs;
 
@@ -50,7 +49,6 @@ sub prepare {
             my $fieldname = $field->{name};
             die qq{Wrong usage! When an array is passed, "name" must be set!}
               unless $fieldname;
-            delete $field->{name};
             $self->field($fieldname, $field);
         }
     }
@@ -175,10 +173,12 @@ sub _build_object {
             $class = $validator->{class};
             die "Missing class for $field\n" unless $class;
             $classoptions = $validator->{options} || {};
+            # print Dumper($classoptions);
         }
         else {
             die "Wron usage. Pass a string, an hashref or a sub!\n";
         }
+        # lazy loading, avoiding to load the same class twice
         try {
             $obj = $class->new(%$classoptions);
         } catch {
