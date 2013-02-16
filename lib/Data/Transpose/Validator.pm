@@ -33,6 +33,32 @@ sub new {
     bless $self, $class;
 }
 
+=head2 option
+
+Accessor to the options set
+
+=cut
+
+sub option {
+    my ($self, $key, $value) = @_;
+    $self->{options} = {} unless defined $self->{options};
+    return unless $key;
+    if ($key and defined $value) {
+        $self->{options}->{$key} = $value;
+    }
+    return $self->{options}->{$key};
+}
+
+=head2 options
+
+Accessor to get the list of the options
+
+=cut
+
+sub options {
+    return keys %{shift->{options}}
+}
+
 =head2 prepare
 
 C<prepare> takes a hash and pass the key/value pairs to C<field> 
