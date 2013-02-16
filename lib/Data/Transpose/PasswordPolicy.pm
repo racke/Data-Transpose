@@ -609,6 +609,10 @@ sub is_valid {
 	$self->error("Password is missing");
 	return undef;
     }
+    # reset the errors, we are going to do the checks anew;
+    $self->reset_errors;
+
+
 
     # To disable this, set the minimum to 1 and the max
     # to 255, but it makes no sense.

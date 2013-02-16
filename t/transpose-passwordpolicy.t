@@ -40,24 +40,24 @@ is($pv->mindiffchars, 6, "mindiffchars works (6)");
 
 $pv->password("Aklsxdflasjdflaj89q3klasxwdd!");
 
-$pv->reset_errors;
+# $pv->reset_errors;
 
 ok($pv->is_valid, "password '". $pv->password . "' is valid");
 
-$pv->reset_errors;
+# $pv->reset_errors;
 
 ok($pv->is_valid("AXvx&/ad832kdzidsk43dlsf"),
    $pv->password . 'is valid too (passed via ->is_valid($pass)');
 
 print $pv->error;
 
-$pv->reset_errors;
+# $pv->reset_errors;
 
 $pv->password("Aklsxdflasjdflaj89q3klasxwdd_");
 
 ok($pv->is_valid, $pv->password . " is valid");
 
-$pv->reset_errors;
+# $pv->reset_errors;
 # print $pv->error;
 
 # try the settings
@@ -65,7 +65,7 @@ $pv->maxlength(10);
 $pv->minlength(3);
 ok(!$pv->is_valid, "password is not valid with limits 3 and 10");
 
-$pv->reset_errors;
+# $pv->reset_errors;
 
 $pv->maxlength(length $pv->password);
 ok($pv->is_valid, "password now is valid with lenght " . $pv->maxlength);
@@ -158,7 +158,7 @@ foreach my $enable (qw/mixed digits common specials varchars/) {
     ok(!$pv->is_valid, "But not anymore, with $enable enabled...");
     ok($pv->error, $pv->error);
     $pv->disable($enable);
-    $pv->reset_errors;
+    #    $pv->reset_errors;
 }
 
 my %checks = ("m4rc0" => "username",
@@ -174,14 +174,14 @@ while (my ($password, $enable) = each %checks) {
     ok(!$pv->is_valid, "But not anymore, with $enable enabled...");
     ok($pv->error, $pv->error);
     $pv->disable($enable);
-    $pv->reset_errors;
+    # $pv->reset_errors;
 }
 
 $pv->enable("patterns");
 $pv->patternlength(4);
 $pv->password("asd123");
 ok($pv->is_valid, $pv->password . " is valid when patternlength is 4");
-$pv->reset_errors;
+# $pv->reset_errors;
 $pv->patternlength(3);
 ok(!$pv->is_valid, "After setting to 3, it's not anymore: " . $pv->error);
 
