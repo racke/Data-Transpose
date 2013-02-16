@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 81;
+use Test::More tests => 83;
 BEGIN { use_ok('Data::Transpose::PasswordPolicy') };
 
 
@@ -206,3 +206,38 @@ my $newtime = time();
 my $average = ($newtime - $time) / $tries;
 ok(($average < 0.2), "checking that each password takes less then 0.2 second: $average");
 
+my $lasttest = Data::Transpose::PasswordPolicy->new(
+                                                    {username => "marco",
+                                                     password => "pass1234",
+                                                    });
+
+$lasttest->is_valid;
+my @errors = $lasttest->error;
+
+print Dumper(\@errors);
+my @expected = (
+                [
+                 'length',
+                 'Wrong length'
+                ],
+                [
+                 'specials',
+                 'No special characters'
+                ],
+                [
+                 'common',
+                 'Found common password'
+                ],
+                [
+                 'mixed',
+                 'No mixed case'
+                ],
+                [
+                 'patterns',
+                 'Found common patterns: 123, 234'
+                ]
+               );
+
+is_deeply(\@errors, \@expected, "Checking resulting array");
+is($lasttest->error, join("; ", map { $_->[1] } @expected),
+   "Checking error string");
