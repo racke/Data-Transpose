@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 71;
+use Test::More tests => 81;
 BEGIN { use_ok('Data::Transpose::PasswordPolicy') };
 
 
@@ -157,6 +157,8 @@ foreach my $enable (qw/mixed digits common specials varchars/) {
     $pv->enable($enable);
     ok(!$pv->is_valid, "But not anymore, with $enable enabled...");
     ok($pv->error, $pv->error);
+    my ($errcode) = $pv->error_codes; # pick the first value
+    is($errcode, $enable, "Checking the error code $enable");
     $pv->disable($enable);
     #    $pv->reset_errors;
 }
@@ -173,6 +175,8 @@ while (my ($password, $enable) = each %checks) {
     $pv->enable($enable);
     ok(!$pv->is_valid, "But not anymore, with $enable enabled...");
     ok($pv->error, $pv->error);
+    my ($errcode) = $pv->error_codes; # pick the first value
+    is($errcode, $enable, "Checking the error code $enable");
     $pv->disable($enable);
     # $pv->reset_errors;
 }
@@ -184,7 +188,8 @@ ok($pv->is_valid, $pv->password . " is valid when patternlength is 4");
 # $pv->reset_errors;
 $pv->patternlength(3);
 ok(!$pv->is_valid, "After setting to 3, it's not anymore: " . $pv->error);
-
+my ($errcode) = $pv->error_codes;
+is($errcode, 'patterns', "Checking error code length");
 
 # speed test;
 

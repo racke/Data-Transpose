@@ -269,7 +269,7 @@ sub password_length_ok {
 	($self->password_length <= $self->maxlength)) {
 	return undef;
     } else {
-	return "Wrong length";
+	return ["length" => "Wrong length"];
     }
 }
 
@@ -338,7 +338,7 @@ sub password_has_username {
 
     my $match = _leet_string_match($self->password, $self->username);
     if ($match) {
-	return "Found username $match in password";
+	return [ username => "Found username $match in password" ];
     } else {
 	return undef
     }
@@ -366,7 +366,7 @@ sub password_has_common_password {
     }
     if (@found) {
         # warn join(" ", @found) . "\n";
-	return "Found common password"
+	return [ common => "Found common password" ];
     }
     else {
 	return undef;
@@ -434,7 +434,7 @@ sub password_has_enough_different_char {
     # check the number of chars
     my $totalchar = scalar(keys(%found));
     if ($totalchar <= $self->mindiffchars) {
-	return "Not enough different characters"
+	return [ varchars => "Not enough different characters" ];
     }
 
     my %reportconsec;
@@ -453,8 +453,10 @@ sub password_has_enough_different_char {
 	    $passwdlen = $passwdlen - $rep; 
 	}
 	if ($passwdlen < $self->minlength) {
-	    return "Found too many repetitions, lowering the effectivelength: "
-	      . (join(", ", (keys %reportconsec)));
+            my $errstring = "Found too many repetitions, "
+              . "lowering the effectivelength: "
+                . (join(", ", (keys %reportconsec)));
+	    return [ varchars => $errstring ];
 	}
     }
 
@@ -468,7 +470,7 @@ sub password_has_enough_different_char {
 	$max = $v if ($v > $max);
     }
     if ($max > $maxrepeat) {
-	return "Found too many repetions";
+	return [ varchars => "Found too many repetions" ];
     }
     return undef;
 }
@@ -488,7 +490,7 @@ sub password_has_mixed_chars {
     if (($pass =~ m/[a-z]/) and ($pass =~ m/[A-Z]/)) {
 	return undef
     } else {
-	return "No mixed case"
+	return [ mixed => "No mixed case"];
     }
 }
 
@@ -506,7 +508,7 @@ sub password_has_specials {
     if ($self->password =~ m/[\W_]/) {
 	return undef
     } else {
-	return "No special characters";
+	return [ specials => "No special characters" ];
     }
 }
 
@@ -524,7 +526,7 @@ sub password_has_digits {
     if ($self->password =~ m/\d/) {
 	return undef
     } else {
-	return "No digits in the password"
+	return [ digits => "No digits in the password" ];
     }
 }
 
@@ -541,7 +543,7 @@ sub password_has_letters {
     if ($self->password =~ m/[a-zA-Z]/) {
 	return undef
     } else {
-	return "No letters in the password"
+	return [letters => "No letters in the password" ];
     }
 }
 
@@ -578,7 +580,8 @@ sub password_has_patterns {
 	}
     }
     if (@found) {
-	return "Found common patterns: " . join(", ", @found);
+        my $errstring = "Found common patterns: " . join(", ", @found);
+	return [ patterns => $errstring ];
     } else {
 	return undef;
     }
@@ -606,7 +609,7 @@ sub is_valid {
         $self->password($password);
     }
     unless ($self->password) {
-	$self->error("Password is missing");
+	$self->error([missing => "Password is missing"]);
 	return undef;
     }
     # reset the errors, we are going to do the checks anew;
@@ -663,21 +666,60 @@ sub is_valid {
 With argument, set the error. Without, return the errors found in the
 password.
 
+In list context, we pass the array with the error codes and the strings.
+In scalar context, we return the concatenated error strings.
+
 =cut
 
 
 sub error {
     my ($self, $error) = @_;
     if ($error) {
+        my $array;
+        if (ref($error) eq "") {
+            $array = [ $error => $error ];
+        }
+        elsif (ref($error) eq 'ARRAY') {
+            $array = $error;
+        }
+        else {
+            die "Wrong usage: error accepts strings or arrayrefs\n";
+        }
 	# warn "Setting $error";
-	if (defined $self->{error}) {
-	    $self->{error} .= $error . "; ";
+        if (defined $self->{error}) {
+	    push @{$self->{error}}, $error;
 	} else {
-	    $self->{error} = $error . "; ";
+	    $self->{error} = [ $error ];
 	}
     }
-    return $self->{error};
+    return unless defined $self->{error};
+    my @errors = @{$self->{error}};
+
+    my $errorstring = join("; ", map { $_->[1] } @errors);
+    # in scalar context, we stringify
+    return wantarray ? @errors : $errorstring;
 }
+
+=head2 error_codes
+
+Return a list of the error codes found in the password. The error
+codes match the options. (e.g. C<mixed>, C<patterns>).
+
+If you want the verbose string, you need the C<error> method.
+
+=cut
+
+
+sub error_codes {
+    my $self = shift;
+    my @errors = $self->error;
+    my @out;
+    for (@errors) {
+        push @out, $_->[0];
+    }
+    return @out;
+}
+
 
 =head2 $obj->reset_errors
 
