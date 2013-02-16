@@ -5,9 +5,7 @@ use warnings;
 use Data::Transpose::Validator;
 use Data::Dumper;
 
-use Test::More tests => 4;
-
-print "Testing a simple case\n";
+use Test::More tests => 17;
 
 my $dtv = Data::Transpose::Validator->new();
 
@@ -43,10 +41,13 @@ my $schema = [
              ];
 
 
+print "Testing a simple form. The unknown option is to the default, so submit will be ignored\n";
+
 my $form = {
             email => ' ciao@hello.it ',
             password => ' 4Horses5_Staple ',
             country => ' Germany ',
+            submit => 1,
             };
 
 my $expected = {
@@ -65,13 +66,61 @@ is_deeply($clean, $expected,
 $form->{password} = '      horse_stalple   ';
 $expected->{password} = 'horse_stalple';
 
-print Dumper($form);
+# print Dumper($form);
 
-my $clean = $dtv->transpose($form);
-ok($clean, "Transposing returned the clean hash");
-is_deeply($clean, $expected,
+my $otherclean = $dtv->transpose($form);
+ok($otherclean, "Transposing returned the clean hash");
+is_deeply($otherclean, $expected,
           "The transposing stripped the leading/trailing whitespace");
 
 print ($dtv->packed_errors) unless $clean;
+
+print "Check the default options\n";
+
+is($dtv->option("requireall"), 0, "Requireall is set to false");
+$dtv->option(requireall => 1);
+is($dtv->option("requireall"), 1, "Requireall now is set to true");
+
+print "Check option for individual fields\n";
+
+is($dtv->option_for_field(stripwhite => "email"), 1,
+   "stripwhite for email is true");
+
+$schema->[0]->{options}->{stripwhite} = 0;
+$dtv = Data::Transpose::Validator->new(stripwhite => 1);
+$dtv->prepare($schema);
+is($dtv->option_for_field(stripwhite => "email"), 0,
+   "stripwhite for email is false now");
+
+my @objoptions = sort (qw/stripwhite requireall unknown/);
+my @optionstocheck = $dtv->options;
+is_deeply(\@objoptions, \@optionstocheck, "Checking ->options");
+
+eval {
+    $dtv->field({}, 1);
+};
+ok($@, "Passing something which is not a scalar crashes the thing");
+
+my @sortedfields = $dtv->_sorted_fields;
+my @expected = qw/email password country/;
+is_deeply(\@sortedfields, \@expected, "fields are kept sorted internally");
+
+ok(!$dtv->field_is_required("email"), "email is not required");
+# tweak the schema
+$dtv->option(requireall => 1);
+ok($dtv->field_is_required("email"), "Now it is ");
+$dtv->option(requireall => 0);
+ok(!$dtv->field_is_required("email"), "Now it's not");
+$schema->[0]->{required} = 1;
+$dtv->prepare($schema);
+ok($dtv->field_is_required("email"), "Now it is ");
+
+$dtv->field(email => { required => 1 });
+is_deeply ($dtv->field("email"), { required => 1 },
+           "Field email set with field");
+
+is(ref($dtv->field), "HASH", "All the fields retrieved with ->field");
+
+
 
 

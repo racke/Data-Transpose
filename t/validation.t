@@ -47,6 +47,7 @@ my %sc = (
                                                  disabled => {
                                                               digits => 1,
                                                               mixed => 1,
+                                                              username => 1,
                                                              }
                                                 }
                                     },
@@ -95,3 +96,15 @@ if ($clean) {
 # print Dumper($form);
 
 ok($form->errors);
+
+# print Dumper($form->field);
+# print join("\n", $form->faulty_fields);
+# 
+# print Dumper($form->errors_as_hashref_for_humans);
+# print "\n";
+# 
+# print Dumper($form->errors_as_hashref);
+# 
+# print "\n";
+# 
+print join("\n", $form->packed_errors), "\n";

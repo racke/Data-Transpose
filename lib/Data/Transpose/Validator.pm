@@ -48,9 +48,12 @@ sub new {
     bless $self, $class;
 }
 
-=head2 option
+=head2 option($option, [ $value ]);
 
-Accessor to the options set
+Accessor to the options set. With an optional argument, set that option.
+
+  $dtv->option("requireall"); # get 
+  $dtv->option(requireall => 1); # set
 
 =cut
 
@@ -69,6 +72,8 @@ sub option {
 Accessor to get the option for this particular field. First it looks
 into the fields options, then into the global ones, returning the
 first defined value.
+
+  $dtv->option(email => "stripwhite");
 
 =cut
 
@@ -94,15 +99,60 @@ sub option_for_field {
 
 Accessor to get the list of the options
 
+  $dtv->options;
+  # -> requireall, stripwhite, unknown
+
 =cut
 
 sub options {
-    return keys %{shift->{options}}
+    return sort keys %{shift->{options}}
 }
 
-=head2 prepare
+=head2 prepare(%hash) or prepare([ {}, {}, ... ])
 
-C<prepare> takes a hash and pass the key/value pairs to C<field> 
+C<prepare> takes a hash and pass the key/value pairs to C<field>. This
+method can accept an hash or an array reference. When an arrayref is
+passed, the output of the errors will keep the provided sorting (this
+is the only difference).
+
+You can call prepare as many times you want before the transposing.
+Fields are added or replaced, but you could end up with messy errors
+if you provide duplicates, so please just don't do it (but feel free
+to add the fields at different time I<as long you don't overwrite
+them>.
+
+  $dtv->prepare([
+                  { name => "country" ,
+                    required => 1,
+                  },
+                  {
+                   name => "country2",
+                   validator => 'String'},
+                  {
+                   name => "email",
+                   validator => "EmailValid"
+                  },
+                 ]
+                );
+  
+or
+
+  $dtv->prepare(
+                country => {
+                            required => 1,
+                           },
+                country2 => {
+                             validator => "String"
+                            }
+               );
+  
+  ## other code here
+
+  $dtv-prepare(
+               email => {
+                         validator => "EmailValid"
+                        }
+               );
 
 =cut
 
@@ -129,15 +179,24 @@ sub prepare {
     }
 }
 
-=head2 field
+=head2 field($field)
 
-This accessor sets the various fields and their options.
+This accessor sets the various fields and their options. It's intended
+to be used only internally, but you can add individual fields with it
+
+  $dtv->field(email => { required => 1 });
+
+  print(Dumper($dtv->field("email"));
+
+  print(Dumper($dtv->field);
+
+With no arguments, it retrieves the hashref with all the fields, while
+with 1 argument retrieves the hashref of that specific field.
 
 =cut
 
 sub field {
     my ($self, $field, $args) = @_;
-
     # initialize
     $self->{fields} = {} unless exists $self->{fields};
     
@@ -226,7 +285,7 @@ sub transpose {
         if ($self->option_for_field('stripwhite', $field)) {
             $value = $self->_strip_white($value);
         }
-        print "$value\n";
+        # print "$value\n";
 
         # recheck in case 
         next unless $self->_is_required($field, $value);
