@@ -156,19 +156,112 @@ sub transpose {
 }
 
 
-=head2 error
+=head2 errors
 
-Accessor to set or retrieve the errors.
+Accessor to set or retrieve the errors (returned as an arrayref of
+hashes). Each element has the key C<field> set to the fieldname and
+the key C<errors> holds the the error list. This, in turn, is a list
+of arrays, where the first element is the error code, and the second
+the human format set by the module (in English). See the method belows
+for a more accessible way for the errors.
 
 =cut
 
 sub errors {
     my ($self, $field, $error) = @_;
-    if ($error) {
-        $self->{errors} = {} unless $self->{errors};
-        $self->{errors}->{$field} = $error;
+    if ($error and $field) {
+        $self->{errors} = [] unless $self->{errors};
+        push @{$self->{errors}}, {field => $field,
+                                  errors => $error};
     }
     return $self->{errors};
+}
+
+=head2 faulty_fields 
+
+Accessor to the list of fields where the validator detected errors.
+
+=cut
+
+sub faulty_fields {
+    my $self = shift;
+    my @ffs;
+    foreach my $err (@{$self->errors}) {
+        push @ffs, $err->{field};
+    }
+    return @ffs;
+}
+
+=head2 errors_as_hashref_for_humans
+
+Accessor to get a list of the failed checks. It returns an hashref
+with the keys set to the faulty fields, and the value as an arrayref
+to a list of the error messages.
+
+=cut
+
+sub errors_as_hashref_for_humans {
+    my $self = shift;
+    return $self->_get_errors_field(1);
+}
+
+=head2 errors_as_hashref
+
+Same as above, but for machine processing. It returns the lists of
+error codes as values.
+
+=cut
+
+sub errors_as_hashref {
+    my $self = shift;
+    return $self->_get_errors_field(0);
+}
+
+=head2 packed_errors($fieldsep, $separator)
+
+As convenience, this metod will join the human readable strings using
+the second argument, and introduced by the name of the field
+concatenated to the first argument. Example with the defaults (colon
+and comma):
+
+  password: Wrong length, No special characters, No letters in the
+  password, Found common password, Not enough different characters,
+  Found common patterns: 1234
+  country: My error
+  email2: rfc822
+
+It's returned as an array, so you still can process it easily.
+
+=cut
+
+
+sub packed_errors {
+    my $self = shift;
+    my $fieldsep = shift || ": ";
+    my $separator = shift || ", ";
+
+    my $errs = $self->errors_as_hashref_for_humans;
+    my @out;
+    print Dumper($errs);
+    foreach my $k ($self->faulty_fields) {
+        push @out, $k . $fieldsep . join($separator, @{$errs->{$k}});
+    }
+    return @out;
+}
+
+
+sub _get_errors_field {
+    my $self = shift;
+    my $i = shift;
+    my %errors;
+    foreach my $err (@{$self->errors}) {
+        my $f = $err->{field};
+        $errors{$f} = [] unless exists $errors{$f};
+        foreach my $string (@{$err->{errors}}) {
+            push @{$errors{$f}}, $string->[$i];
+        }
+    }
+    return \%errors;
 }
 
 
