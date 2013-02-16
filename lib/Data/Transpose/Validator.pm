@@ -83,7 +83,8 @@ sub transpose {
     foreach my $k (keys %$hash) {
         my $obj = $self->_build_object($k);
         unless ($obj->is_valid($hash->{$k})) {
-            $self->errors($k, $obj->error)
+            my @errors = $obj->error;
+            $self->errors($k, \@errors)
         }
     }
     # do other stuff, check the options, filter, set  and return it
