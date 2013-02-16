@@ -11,7 +11,9 @@ use Data::Transpose::Validator::Subrefs;
 
 The constructor. It accepts a hash as argument, with options:
 
-C<stripwhite>
+C<stripwhite>: strip leading and trailing whitespace from strings (default: true)
+
+C<requireall>: require all the fields of the schema (default: false)
 
 
 =cut 
@@ -21,7 +23,8 @@ sub new {
     my ($class, %options) = @_;
     my $self = {};
     my %defaults = (
-                    stripwhite => 0,
+                    stripwhite => 1,
+                    requireall => 0,
                    );
     # slurp the options, overwriting the defaults
     while (my ($k, $v) = each %defaults) {
@@ -49,6 +52,32 @@ sub option {
     return $self->{options}->{$key};
 }
 
+=head2 option_for_field($option, $field)
+
+Accessor to get the option for this particular field. First it looks
+into the fields options, then into the global ones, returning the
+first defined value.
+
+=cut
+
+sub option_for_field {
+    my ($self, $option, $field) = @_;
+    return unless ($field && $option);
+    my $hash = $self->field($field);
+    return unless ($hash and (ref($hash) eq 'HASH'));
+    # print Dumper($hash);
+    if (exists $hash->{options}) {
+        if (exists $hash->{options}->{$option}) {
+            # higher priority option exists, so return that
+            return $hash->{options}->{$option};
+        }
+    }
+    return $self->option($option) # return the global one;
+}
+
+
+
+
 =head2 options
 
 Accessor to get the list of the options
@@ -71,6 +100,8 @@ sub prepare {
     if (@_ == 1) {
         # we have an array;
         my $arrayref = shift;
+        die qq{Wrong usage! If you pass a single argument, must be a arrayref\n"}
+          unless (ref($arrayref) eq 'ARRAY');
         foreach my $field (@$arrayref) {
             my $fieldname = $field->{name};
             die qq{Wrong usage! When an array is passed, "name" must be set!}
@@ -112,7 +143,7 @@ sub field {
     }
 
     # behave as an accessor
-    if($field) {
+    if ($field) {
         return $self->{fields}->{$field}
     }
     # retrieve all
@@ -133,6 +164,21 @@ sub _sorted_fields {
 }
 
 
+sub _is_required {
+    my ($self, $field, $value) = @_;
+    if ((not defined $value) or ($value eq '')) {
+        # put an error if the value is undef or ""
+        if ($self->field_is_required($field)) {
+            $self->errors($field,
+                          [[ "required" => "Missing required field $field" ]]
+                         );
+        }
+        return;
+    }
+    return 1;
+}
+
+
 =head2 transpose
 
 The main method. It validates the hash and return a validated one or
@@ -141,13 +187,31 @@ nothing if there were errors.
 =cut
 
 
+
+
 sub transpose {
     my ($self, $hash) = @_;
-    foreach my $k (keys %$hash) {
-        my $obj = $self->_build_object($k);
-        unless ($obj->is_valid($hash->{$k})) {
+    my %output;
+    foreach my $field ($self->_sorted_fields) {
+        my $value = $hash->{$field};
+        # we always trigger the next if it's undefined, but the method
+        # will raise an error if it's required
+        next unless $self->_is_required($field, $value);
+
+
+        # then trim it
+        if ($self->option_for_field('stripwhite', $field)) {
+            $value = $self->_strip_white($value);
+        }
+        print "$value\n";
+
+        # recheck in case 
+        next unless $self->_is_required($field, $value);
+        # validate
+        my $obj = $self->_build_object($field);
+        unless ($obj->is_valid($value)) {
             my @errors = $obj->error;
-            $self->errors($k, \@errors)
+            $self->errors($field, \@errors)
         }
     }
     # do other stuff, check the options, filter, set  and return it
@@ -242,7 +306,7 @@ sub packed_errors {
 
     my $errs = $self->errors_as_hashref_for_humans;
     my @out;
-    print Dumper($errs);
+    # print Dumper($errs);
     foreach my $k ($self->faulty_fields) {
         push @out, $k . $fieldsep . join($separator, @{$errs->{$k}});
     }
@@ -264,7 +328,12 @@ sub _get_errors_field {
     return \%errors;
 }
 
-
+sub field_is_required {
+    my ($self, $field) = @_;
+    return unless defined $field;
+    return 1 if $self->option("requireall");
+    return $self->field($field)->{required};
+}
 
 sub _build_object {
     my $self = shift;
@@ -309,8 +378,13 @@ sub _build_object {
     return $obj;
 }
 
-
-
-
+sub _strip_white {
+    my ($self, $string) = @_;
+    return unless defined $string;
+    return $string unless (ref($string) eq ''); # scalars only
+    $string =~ s/^\s+//;
+    $string =~ s/\s+$//;
+    return $string;
+}
 
 1;
