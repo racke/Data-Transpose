@@ -15,6 +15,17 @@ C<stripwhite>: strip leading and trailing whitespace from strings (default: true
 
 C<requireall>: require all the fields of the schema (default: false)
 
+C<unknown>: what to do if other fields, not present in the schema, are passed.
+
+=over 4
+
+C<fail>: The transposing routine will die with a message stating the unknown fields
+
+C<pass>: The routine will accept them and return them in the validated hash 
+
+C<skip>: The routine will ignore them and not return them in the validated hash. This is the default.
+
+=back
 
 =cut 
 
@@ -25,6 +36,7 @@ sub new {
     my %defaults = (
                     stripwhite => 1,
                     requireall => 0,
+                    unknown => 'skip',
                    );
     # slurp the options, overwriting the defaults
     while (my ($k, $v) = each %defaults) {
@@ -191,9 +203,20 @@ nothing if there were errors.
 
 sub transpose {
     my ($self, $hash) = @_;
-    my %output;
+    die "Wrong usage! A hashref as argument is needed!\n"
+      unless ($hash and (ref($hash) eq 'HASH'));
+    my (%output, %status);
+
+    # remember which keys we had processed
+    $status{$_} = 1 for keys %$hash;
+
     foreach my $field ($self->_sorted_fields) {
-        my $value = $hash->{$field};
+        my $value;
+        if (exists $hash->{$field}) {
+            $value = $hash->{$field};
+            # the value is present, take it out from the status
+            delete $status{$field}; 
+        };
         # we always trigger the next if it's undefined, but the method
         # will raise an error if it's required
         next unless $self->_is_required($field, $value);
@@ -215,6 +238,18 @@ sub transpose {
         }
         $output{$field} = $value;
     }
+    # now the filtering loop has ended. See if we have still things in the hash.
+    if (keys %status) {
+        my $unknown = $self->option('unknown');
+        if ($unknown eq 'pass') {
+            for (keys %status) {
+                $output{$_} = $hash->{$_};
+            }
+        } elsif ($unknown eq 'fail') {
+            die "Unknown fields in input: ", join(',', keys %status), "\n";
+        }
+    }
+
     # do other stuff, check the options, filter, set  and return it
     return if $self->errors;
     return \%output;
