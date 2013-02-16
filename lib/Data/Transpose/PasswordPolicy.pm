@@ -365,6 +365,7 @@ sub password_has_common_password {
 	}
     }
     if (@found) {
+        # warn join(" ", @found) . "\n";
 	return "Found common password"
     }
     else {
@@ -394,6 +395,7 @@ sub _leet_string_match {
     # and use it as re against the provided string
     #    warn "checking $lcstring against $re\n";
     if ($lcstring =~ m/$re/i) {
+        # warn $re . "\n";
 	# return false if the re is present in the string
 	return $lcmatch
     } else {
@@ -589,12 +591,20 @@ sub password_has_patterns {
 
 Return the password if matches the policy or a false value if not.
 
+For convenience, this method can accept the password to validate as
+argument, which will overwrite the one provided with the C<password>
+method (if it was set).
+
 =cut
 
 
 
 sub is_valid {
     my $self = shift;
+    my $password = shift;
+    if (defined $password and $password ne "") {
+        $self->password($password);
+    }
     unless ($self->password) {
 	$self->error("Password is missing");
 	return undef;

@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 70;
+use Test::More tests => 71;
 BEGIN { use_ok('Data::Transpose::PasswordPolicy') };
 
 
@@ -46,13 +46,19 @@ ok($pv->is_valid, "password '". $pv->password . "' is valid");
 
 $pv->reset_errors;
 
+ok($pv->is_valid("AXvx&/ad832kdzidsk43dlsf"),
+   $pv->password . 'is valid too (passed via ->is_valid($pass)');
+
+print $pv->error;
+
+$pv->reset_errors;
+
 $pv->password("Aklsxdflasjdflaj89q3klasxwdd_");
 
 ok($pv->is_valid, $pv->password . " is valid");
 
 $pv->reset_errors;
 # print $pv->error;
-
 
 # try the settings
 $pv->maxlength(10);
