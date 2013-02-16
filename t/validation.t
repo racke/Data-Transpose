@@ -13,43 +13,60 @@ use Test::More tests => 1;
 my $dirty = {
              email => "i'm\@broken",
              password => "1234",
-             country => "  "
+             country => "  ",
+             email2 => "hello",
+             country2 => "ciao",
             };
 
 # set the options
 my $form = Data::Transpose::Validator->new(stripwhite => 1);
 
-my %schema = (
-               email => {
-                         type => 'EmailValid',
-                         required => 1,
-                         # option to pass to the class
-                         # Data::Transpose::Validator::Type,
-                         # which in turn will call is_valid
-                         typeoptions => {
-                                         option1 => 1,
-                                         option2 => 2,
-                                        },
-                         message => "Failed for those reason"
-                        },
-               password => {
-                            type => 'PasswordPolicy',
-                            required => 0,
-                            typeoptions => {
-                                            a => 1,
-                                            b => 2,
-                                           },
-                            options => {
-                                        stripwhite => 0,
-                                       }
-                           },
-             );
+my %sc = (
+          email => {
+                    validator => {
+                                  class => 'Data::Transpose::EmailValid',
+                                  options => {
+                                              a => 1,
+                                              b => 2,
+                                             },
+                                 },
+                    required => 1,
+                    options => {
+                                stripwhite => 0, # override the global
+                               },
+                   },
+          password => {
+                       validator => {
+                                     class => 'Data::Transpose::PasswordPolicy',
+                                     options => {
+                                                 minlength => 10,
+                                                 maxlength => 50,
+                                                 patternlength => 4,
+                                                 mindiffchars => 5,
+                                                 disabled => {
+                                                              digits => 1,
+                                                              mixed => 1,
+                                                             }
+                                                }
+                                    },
+                       required => 0,
+                      }
+         );
 
-$form->prepare(%schema);
+$form->prepare(%sc);
 
-# add more, if you want
+# add more, if you want, as an arrayref (will keep the sorting);
 
-$form->prepare(country => {type => 'String'});
+$form->prepare([
+                {
+                 name => "country2",
+                 validator => 'String'},
+                {
+                 name => "email2",
+                 validator => "EmailValid"
+                }
+               ]
+              );
 
 
 # here $clean is meant to be fully validated, or nothing
@@ -60,3 +77,4 @@ if ($clean) {
 } else {
     print Dumper($form->errors);
 }
+print Dumper($form);

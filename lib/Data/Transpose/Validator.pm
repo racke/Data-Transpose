@@ -3,6 +3,9 @@ package Data::Transpose::Validator;
 use strict;
 use warnings;
 use Module::Load;
+use Try::Tiny;
+use Storable qw/dclone/;
+use Data::Dumper;
 
 =head2 new
 
@@ -39,9 +42,26 @@ C<prepare> takes a hash and pass the key/value pairs to C<field>
 
 sub prepare {
     my $self = shift;
-    my %fields = @_;
-    while (my ($k, $v) = each %fields) {
-        $self->field($k, $v)
+    if (@_ == 1) {
+        # we have an array;
+        my $arrayref = shift;
+
+        # to play on the safe side, make a deep copy
+        my $array = dclone($arrayref);
+
+        foreach my $field (@$array) {
+            my $fieldname = $field->{name};
+            die qq{Wrong usage! When an array is passed, "name" must be set!}
+              unless $fieldname;
+            delete $field->{name};
+            $self->field($fieldname, $field);
+        }
+    }
+    else {
+        my %fields = @_;
+        while (my ($k, $v) = each %fields) {
+            $self->field($k, $v)
+        }
     }
 }
 
@@ -56,19 +76,41 @@ sub field {
 
     # initialize
     $self->{fields} = {} unless exists $self->{fields};
-
-    # validate the field
-    unless ($field and (ref($field) eq '')) {
-        die "Wrong usage, argument to field is mandatory\n" 
-    };
-
-    #  validate the args and store them
-    if ($args and (ref($args) eq 'HASH')) {
-        $self->{fields}->{$field} = $args;
-    }
     
-    return $self->{fields}->{$field};
+    if ($field and $args) {
+        unless ($field and (ref($field) eq '')) {
+            die "Wrong usage, argument to field is mandatory\n" 
+        };
+
+        #  validate the args and store them
+        if ($args and (ref($args) eq 'HASH')) {
+            $self->{fields}->{$field} = $args;
+        }
+        # add the field to the list
+        $self->_sorted_fields($field);
+    }
+
+    # behave as an accessor
+    if($field) {
+        return $self->{fields}->{$field}
+    }
+    # retrieve all
+    else {
+        return $self->{fields};
+    }
 }
+
+# return the sorted list of fields
+
+sub _sorted_fields {
+    my ($self, $field) = @_;
+    $self->{ordering} = [] unless defined $self->{ordering};
+    if ($field) {
+        push @{$self->{ordering}}, $field;
+    }
+    return @{$self->{ordering}};
+}
+
 
 =head2 transpose
 
@@ -120,8 +162,13 @@ sub _build_object {
     my $submodule = $params->{type} || "Base";
     my $options = $params->{options} || {};
     my $class = __PACKAGE__ .'::'.$submodule;
-    load $class;
-    my $obj = $class->new(%$options);
+    my $obj;
+    try {
+        $obj = $class->new(%$options);
+    } catch {
+        load $class;
+        $obj = $class->new(%$options);
+    };
     $self->{objects}->{$field} = $obj; # hold it
     return $obj;
 }
