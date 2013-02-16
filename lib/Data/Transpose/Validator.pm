@@ -158,32 +158,32 @@ sub _build_object {
 
     my $validator = $params->{validator};
     my $type = ref($validator);
-
-    # if we got a string, the class is Data::Transpose::$string
-    my $class;
-    my $options = $params->{options} || {};
-
     my $obj;
+    # if we got a string, the class is Data::Transpose::$string
     if ($type eq 'CODE') {
         $obj = Data::Transpose::Validator::Subrefs->new($validator);
     }
     else {
+        my ($class, $classoptions);
         if ($type eq '') {
             my $module = $validator || "Base";
             $class = __PACKAGE__ . '::' . $module;
+            # no option can be passed
+            $classoptions = {};
         }
         elsif ($type eq 'HASH') {
             $class = $validator->{class};
             die "Missing class for $field\n" unless $class;
+            $classoptions = $validator->{options} || {};
         }
         else {
             die "Wron usage. Pass a string, an hashref or a sub!\n";
         }
         try {
-            $obj = $class->new(%$options);
+            $obj = $class->new(%$classoptions);
         } catch {
             load $class;
-            $obj = $class->new(%$options);
+            $obj = $class->new(%$classoptions);
         };
     }
     $self->{objects}->{$field} = $obj; # hold it
