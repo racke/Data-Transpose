@@ -81,6 +81,7 @@ my $vnr = Data::Transpose::Validator::NumericRange->new(
 
 foreach my $val (-90, 10.5, 0, , 80.234, 90) {
     ok($vnr->is_valid($val), "$val is valid");
+    ok(!$vnr->error, "No errors");
     if (my $error = $vnr->error) {
         print $error, "\n";
     }
@@ -92,3 +93,18 @@ foreach my $val (-91, -110.5, 1234, , 181.234, 90.1) {
 }
 
 
+my $vnri = Data::Transpose::Validator::NumericRange->new(
+                                                        min => 0,
+                                                        max => 15,
+                                                        integer => 1,
+                                                       );
+
+foreach my $val (0, 15, 8) {
+    ok($vnri->is_valid($val), "$val is valid");
+    ok(!$vnri->error, "No errors");
+}
+
+foreach my $val (-1, 0.5, 8.5, 14.99, 15.1) {
+    ok(!$vnri->is_valid($val), "$val is not valid");
+    ok($vnri->error, "Error returned: " . $vnri->error);
+}
