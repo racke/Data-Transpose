@@ -3,6 +3,27 @@ package Data::Transpose::Validator::Base;
 use strict;
 use warnings;
 
+=head1 NAME
+
+Data::Transpose::Validator::Base - Base class for Data::Transpose::Validator
+
+=head1 SYNOPSIS
+
+  my $v = Data::Transpose::Validator::Base->new(%options);
+  ok($v->is_valid("string"));
+  ok(!$v->is_valid()) 
+
+=cut
+
+=head1 METHODS (to be overwritten by the subclasses)
+
+=head2 new()
+
+Constructor. It accepts an hash with the options.
+
+=cut
+
+
 sub new {
     my $class = shift;
     my %options = @_;
@@ -11,10 +32,36 @@ sub new {
     bless $self, $class;
 }
 
+=head2 is_valid($what)
+
+Main method. Return true if the variable passed is defined, false if
+it's undefined, storing an error.
+
+=cut
+
+
 sub is_valid {
     my ($self, $arg) = @_;
-    defined $arg ? return 1 : return 0;
+    if (defined $arg) {
+        return 1
+    } else {
+        $self->error("undefined");
+        return undef;
+    }
 }
+
+=head2 error
+
+Main method to check why the validator returned false. When an
+argument is provided, set the error.
+
+In scalar context it returns a human-readable string with the errors.
+
+In list context it returns the raw error list, where each element is a
+pair of code and strings.
+
+=cut
+
 
 sub error {
     my ($self, $error) = @_;
@@ -43,11 +90,24 @@ sub error {
     return wantarray ? @errors : $errorstring;
 }
 
+=head2  reset_errors
+
+Clear the errors stored.
+
+=cut
+
 
 sub reset_errors {
     my $self = shift;
     $self->{error} = undef;
 }
+
+
+=head2 error_codes
+
+Returns the list of the error codes for the current validation.
+
+=cut
 
 
 sub error_codes {
