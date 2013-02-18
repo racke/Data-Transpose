@@ -9,9 +9,11 @@ Data::Transpose::Validator::Base - Base class for Data::Transpose::Validator
 
 =head1 SYNOPSIS
 
-  my $v = Data::Transpose::Validator::Base->new(%options);
-  ok($v->is_valid("string"));
-  ok(!$v->is_valid()) 
+  my $v = Data::Transpose::Validator::Base->new;
+  ok($v->is_valid("string"), "A string is valid");
+  ok($v->is_valid([]), "Empty array is valid");
+  ok($v->is_valid({}), "Empty hash is valid");
+  ok(!$v->is_valid(undef), "undef is not valid");
 
 =cut
 
