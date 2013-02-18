@@ -235,21 +235,6 @@ sub _sorted_fields {
 }
 
 
-sub _is_required {
-    my ($self, $field, $value) = @_;
-    if ((not defined $value) or ($value eq '')) {
-        # put an error if the value is undef or ""
-        if ($self->field_is_required($field)) {
-            $self->errors($field,
-                          [[ "required" => "Missing required field $field" ]]
-                         );
-        }
-        return;
-    }
-    return 1;
-}
-
-
 =head2 transpose
 
 The main method. It validates the hash and return a validated one or
@@ -272,33 +257,40 @@ sub transpose {
     # remember which keys we had processed
     $status{$_} = 1 for keys %$hash;
 
+    # we loop over the schema
     foreach my $field ($self->_sorted_fields) {
         my $value;
+        # the incoming hash could not have such a field
+        delete $status{$field} if exists $status{$field};
+
         if (exists $hash->{$field}) {
             $value = $hash->{$field};
             # the value is present, take it out from the status
-            delete $status{$field}; 
         };
-        # we always trigger the next if it's undefined, but the method
-        # will raise an error if it's required
-        next unless $self->_is_required($field, $value);
-
-
-        # then trim it
+        # strip white if the option says so
         if ($self->option_for_field('stripwhite', $field)) {
             $value = $self->_strip_white($value);
         }
-        # print "$value\n";
+        # then we set it in the ouput, it could be undef;
+        $output{$field} = $value;
 
-        # recheck in case 
-        next unless $self->_is_required($field, $value);
-        # validate
+        # if it's required and the only thing provided is "" or undef,
+        # we set an error
+        if ((not defined $value) or ($value eq '')) {
+            if ($self->field_is_required($field)) {
+                # set the error list to ["required" => "Human readable" ];
+                $self->errors($field,
+                              [[ "required" => "Missing required field $field" ]]
+                             );
+            }
+            next;
+        } 
+        # we have something, validate it
         my $obj = $self->_build_object($field);
         unless ($obj->is_valid($value)) {
             my @errors = $obj->error;
             $self->errors($field, \@errors)
         }
-        $output{$field} = $value;
     }
     # now the filtering loop has ended. See if we have still things in the hash.
     if (keys %status) {
@@ -311,7 +303,6 @@ sub transpose {
             die "Unknown fields in input: ", join(',', keys %status), "\n";
         }
     }
-
     # do other stuff, check the options, filter, set  and return it
     return if $self->errors;
     return \%output;
@@ -492,6 +483,7 @@ sub _strip_white {
     my ($self, $string) = @_;
     return unless defined $string;
     return $string unless (ref($string) eq ''); # scalars only
+    return "" if ($string eq ''); # return the empty string
     $string =~ s/^\s+//;
     $string =~ s/\s+$//;
     return $string;

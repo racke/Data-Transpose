@@ -5,7 +5,7 @@ use warnings;
 use Data::Transpose::Validator;
 use Data::Dumper;
 
-use Test::More tests => 17;
+use Test::More tests => 19;
 
 my $dtv = Data::Transpose::Validator->new();
 
@@ -120,6 +120,40 @@ is_deeply ($dtv->field("email"), { required => 1 },
            "Field email set with field");
 
 is(ref($dtv->field), "HASH", "All the fields retrieved with ->field");
+
+# reset all
+
+my %sch = (email => {validator => "EmailValid",
+                     required => 1,
+                    },
+           password => {validator => "PasswordPolicy",
+                        required => 0},
+           username => {required => 1});
+
+# use default
+my $validator = Data::Transpose::Validator->new();
+$validator->prepare(%sch);
+$form = {
+            email => 'melmothx@gmail.com',
+            username => 'melmothx',
+            password => "",
+           };
+
+my $cleaned = $validator->transpose($form);
+
+is_deeply($form, $cleaned, "Form is valid");
+
+
+delete $form->{password};
+$cleaned = $validator->transpose($form);
+
+my $expectedform = { %$form };
+$expectedform->{password} = undef;
+
+is_deeply($cleaned, $expectedform, "fields not passed but not required
+will be undefined but preset)");
+
+print Dumper($form, $expectedform);
 
 
 
