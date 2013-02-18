@@ -16,7 +16,6 @@ WriteMakefile(
         'Test::More' => 0,
         'Test::Warn' => 0,
         'Email::Valid' => 0,
-        'Net::DNS' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Data-Transpose-*' },
