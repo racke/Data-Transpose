@@ -92,7 +92,7 @@ $dtv->prepare($schema);
 is($dtv->option_for_field(stripwhite => "email"), 0,
    "stripwhite for email is false now");
 
-my @objoptions = sort (qw/stripwhite requireall unknown/);
+my @objoptions = sort (qw/missing stripwhite requireall unknown/);
 my @optionstocheck = $dtv->options;
 is_deeply(\@objoptions, \@optionstocheck, "Checking ->options");
 
@@ -148,7 +148,7 @@ delete $form->{password};
 $cleaned = $validator->transpose($form);
 
 my $expectedform = { %$form };
-$expectedform->{password} = undef;
+# $expectedform->{password} = undef;
 
 is_deeply($cleaned, $expectedform, "fields not passed but not required
 will be undefined but preset)");

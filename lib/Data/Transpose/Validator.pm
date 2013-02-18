@@ -27,6 +27,18 @@ C<skip>: The routine will ignore them and not return them in the validated hash.
 
 =back
 
+C<missing>: what to do if an optional field is missing
+
+=over 4
+
+C<pass>: do nothing, don't add to the returning hash the missing keys. This is the default.
+
+C<undefine>: add the key with the C<undef> value
+
+C<empty>: set it to the empty string;
+
+=back
+
 =cut 
 
 
@@ -37,6 +49,7 @@ sub new {
                     stripwhite => 1,
                     requireall => 0,
                     unknown => 'skip',
+                    missing => 'pass',
                    );
     # slurp the options, overwriting the defaults
     while (my ($k, $v) = each %defaults) {
@@ -261,18 +274,28 @@ sub transpose {
     foreach my $field ($self->_sorted_fields) {
         my $value;
         # the incoming hash could not have such a field
-        delete $status{$field} if exists $status{$field};
+        if (exists $status{$field}) {
 
-        if (exists $hash->{$field}) {
+            delete $status{$field};
             $value = $hash->{$field};
-            # the value is present, take it out from the status
-        };
-        # strip white if the option says so
-        if ($self->option_for_field('stripwhite', $field)) {
-            $value = $self->_strip_white($value);
+
+            # strip white if the option says so
+            if ($self->option_for_field('stripwhite', $field)) {
+                $value = $self->_strip_white($value);
+            }
+            # then we set it in the ouput, it could be undef;
+            $output{$field} = $value;
         }
-        # then we set it in the ouput, it could be undef;
-        $output{$field} = $value;
+        else {
+            my $missingopt = $self->option_for_field('missing', $field);
+            if ($missingopt eq 'undefine') {
+                $value = undef;
+            }
+            elsif ($missingopt eq 'empty') {
+                $value = "";
+            }
+        }
+
 
         # if it's required and the only thing provided is "" or undef,
         # we set an error
