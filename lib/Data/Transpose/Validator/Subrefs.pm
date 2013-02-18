@@ -67,6 +67,7 @@ The call to the validator.
 
 sub is_valid {
     my ($self, $arg) = @_;
+    $self->reset_errors;
     my ($result, $error) = $self->call->($arg);
     if ($error) {
         $self->error($error);

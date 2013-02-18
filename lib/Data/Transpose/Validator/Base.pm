@@ -44,6 +44,7 @@ it's undefined, storing an error.
 
 sub is_valid {
     my ($self, $arg) = @_;
+    $self->reset_errors;
     if (defined $arg) {
         return 1
     } else {
