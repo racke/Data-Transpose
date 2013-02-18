@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 4;
+use Test::More tests => 12;
 use Data::Transpose::Validator::Subrefs;
 use Data::Transpose::Validator::Base;
 use Data::Transpose::Validator::String;
@@ -30,7 +30,15 @@ ok($vcr->is_valid("H!"), "Hi! is valid");
 ok(!$vcr->is_valid("!"), "! is not");
 is($vcr->error, "Not a \\w", "error displayed correctly");
 
+print "Testing strings\n";
 
+my $vs = Data::Transpose::Validator::String->new;
+
+ok($vs->is_valid(" "), "Space is valid");
+ok($vs->is_valid("\n"), "Newline is valid");
+ok(!$vs->error, "No error");
+ok(!$vs->is_valid([]), "Arrayref is not valid");
+is($vs->error, "Not a string");
 
 
 
