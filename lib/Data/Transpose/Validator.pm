@@ -299,11 +299,17 @@ sub transpose {
 
         # if it's required and the only thing provided is "" or undef,
         # we set an error
-        if ((not defined $value) or ($value eq '')) {
+        if ((not defined $value) or
+            ((ref($value) eq '') and $value eq '') or
+            ((ref($value) eq 'HASH') and (not %$value)) or
+            ((ref($value) eq 'ARRAY') and (not @$value))) {
+
             if ($self->field_is_required($field)) {
                 # set the error list to ["required" => "Human readable" ];
                 $self->errors($field,
-                              [[ "required" => "Missing required field $field" ]]
+                              [
+                               [ "required" => "Missing required field $field" ]
+                              ]
                              );
             }
             next;
@@ -445,6 +451,15 @@ sub _get_errors_field {
     }
     return \%errors;
 }
+
+=head2 field_is_required($field)
+
+Check if the field is required. Return true unconditionally if the
+option C<requireall> is set. If not, look into the schema and return
+the value provided in the schema.
+
+=cut
+
 
 sub field_is_required {
     my ($self, $field) = @_;
