@@ -1,11 +1,12 @@
 use strict;
 use warnings;
-use Test::More tests => 12;
+use Test::More tests => 42;
 use Data::Transpose::Validator::Subrefs;
 use Data::Transpose::Validator::Base;
 use Data::Transpose::Validator::String;
 use Data::Transpose::Validator::URL;
-# use Data::Transpose::Validator::String;
+use Data::Transpose::Validator::NumericRange;
+
 use Data::Dumper;
 
 print "Testing Base\n";
@@ -69,10 +70,25 @@ foreach my $url (@badurls) {
     my @errors = $vu->error;
     is_deeply($errors[0], ["badurl",
                            "URL is not correct (the protocol is required)"],
-              "Error code for $url is correct");
+              "Error code for $url is correct" . $vu->error);
 }
 
 
+my $vnr = Data::Transpose::Validator::NumericRange->new(
+                                                        min => -90,
+                                                        max => 90,
+                                                       );
 
+foreach my $val (-90, 10.5, 0, , 80.234, 90) {
+    ok($vnr->is_valid($val), "$val is valid");
+    if (my $error = $vnr->error) {
+        print $error, "\n";
+    }
+}
+
+foreach my $val (-91, -110.5, 1234, , 181.234, 90.1) {
+    ok(!$vnr->is_valid($val), "$val is not valid");
+    ok($vnr->error, "$val output an error: " . $vnr->error);
+}
 
 
