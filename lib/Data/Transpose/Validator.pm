@@ -264,6 +264,9 @@ sub transpose {
     my ($self, $hash) = @_;
     die "Wrong usage! A hashref as argument is needed!\n"
       unless ($hash and (ref($hash) eq 'HASH'));
+    $self->reset_self;
+
+
     my (%output, %status);
 
     # remember which keys we had processed
@@ -335,6 +338,12 @@ sub errors {
     }
     return $self->{errors};
 }
+
+sub _reset_errors {
+    my $self = shift;
+    delete $self->{errors} if exists $self->{errors};
+}
+
 
 =head2 faulty_fields 
 
@@ -473,6 +482,12 @@ sub _build_object {
     return $obj;
 }
 
+sub _reset_objects {
+    my $self = shift;
+    delete $self->{objects} if exists $self->{objects};
+}
+
+
 sub _strip_white {
     my ($self, $string) = @_;
     return unless defined $string;
@@ -480,6 +495,21 @@ sub _strip_white {
     $string =~ s/^\s+//;
     $string =~ s/\s+$//;
     return $string;
+}
+
+=head2 reset_self
+
+Clear all the internal data stored during validations, to make the
+reusing of the transposing possible.
+
+This is called by C<transpose> before doing any other operation
+
+=cut
+
+sub reset_self {
+    my $self = shift;
+    $self->_reset_objects;
+    $self->_reset_errors;
 }
 
 1;
