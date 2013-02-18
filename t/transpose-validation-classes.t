@@ -1,11 +1,12 @@
 use strict;
 use warnings;
-use Test::More tests => 42;
+use Test::More tests => 108;
 use Data::Transpose::Validator::Subrefs;
 use Data::Transpose::Validator::Base;
 use Data::Transpose::Validator::String;
 use Data::Transpose::Validator::URL;
 use Data::Transpose::Validator::NumericRange;
+use Data::Transpose::Validator::Set;
 
 use Data::Dumper;
 
@@ -108,3 +109,53 @@ foreach my $val (-1, 0.5, 8.5, 14.99, 15.1) {
     ok(!$vnri->is_valid($val), "$val is not valid");
     ok($vnri->error, "Error returned: " . $vnri->error);
 }
+
+my $vset = Data::Transpose::Validator::Set->new(
+                                                list => [qw/Yes No Maybe/],
+                                                multiple => 0,
+                                               );
+
+foreach my $val ("Yes", "No", "Maybe") {
+    ok($vset->is_valid($val), "$val is valid in Set");
+    ok(!$vset->error, "No error");
+}
+
+foreach my $val ("yes", "no", "\n", "maybe", ".", ["Yes", "No"]) {
+    ok(!$vset->is_valid($val), "$val is not valid in Set");
+    ok($vset->error, "Error: " . $vset->error);
+}
+
+ok(!$vset->is_valid("Yes", "No"), "Multiple values are not valid");
+
+
+print "Checkin multiple values\n";
+
+$vset = Data::Transpose::Validator::Set->new(
+                                             list => [qw/Yes No Maybe/],
+                                             multiple => 1,
+                                            );
+
+foreach my $val (["Yes", "No"],
+                 "No",
+                 ["Yes", "Maybe"],
+                 ["Yes", "No", "Maybe"]) {
+    ok($vset->is_valid($val), "$val is valid in Set");
+    ok(!$vset->error, "No error");
+    print $vset->error . "\n" if ($vset->error);
+}
+
+foreach my $val ("yes", "no", "\n", "maybe", ".") {
+    ok(!$vset->is_valid($val), "$val is not valid in Set");
+    ok($vset->error, "Error: " . $vset->error);
+}
+
+ok($vset->is_valid("Yes", "No", "Maybe"));
+ok($vset->is_valid("Yes", "No"));
+ok($vset->is_valid("Yes"));
+ok($vset->is_valid("No", "Maybe"));
+ok(!$vset->is_valid("Yes", "cioa"), "One good and one bad => fail");
+ok($vset->error, $vset->error);
+ok(!$vset->is_valid("bad", "cioa"), "Two bad => fail");
+ok($vset->error, $vset->error);
+
+
