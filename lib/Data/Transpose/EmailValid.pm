@@ -62,6 +62,12 @@ sub email_valid {
     return $self->{email_valid};
 }
 
+=head2 input
+
+Accessor to the input email string.
+
+=cut 
+
 sub input {
     my ($self, $input) = @_;
     if (defined $input) {
@@ -69,6 +75,12 @@ sub input {
     }
     return $self->{input};
 }
+
+=head2 output
+
+Accessor to the output email string.
+
+=cut
 
 sub output {
     my ($self, $output) = @_;
