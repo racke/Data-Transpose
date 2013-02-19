@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 1;
+use Test::More tests => 7;
 use Data::Transpose::Validator;
 use Data::Dumper;
 
