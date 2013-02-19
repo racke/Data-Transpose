@@ -288,11 +288,15 @@ sub transpose {
         }
         else {
             my $missingopt = $self->option_for_field('missing', $field);
+            # basically, with "pass", the default, we don't store the
+            # value
             if ($missingopt eq 'undefine') {
                 $value = undef;
+                $output{$field} = $value;
             }
             elsif ($missingopt eq 'empty') {
                 $value = "";
+                $output{$field} = $value;
             }
         }
 
