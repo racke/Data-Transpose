@@ -422,7 +422,8 @@ and comma):
   country: My error
   email2: rfc822
 
-It's returned as an array, so you still can process it easily.
+In scalar context it returns a string, in list context returns the
+errors as an array, so you still can process it easily.
 
 =cut
 
@@ -438,7 +439,7 @@ sub packed_errors {
     foreach my $k ($self->faulty_fields) {
         push @out, $k . $fieldsep . join($separator, @{$errs->{$k}});
     }
-    return @out;
+    return wantarray ? @out : join("\n", @out);
 }
 
 
