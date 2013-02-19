@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 5;
+use Test::More tests => 27;
 use Data::Transpose::Validator;
 use Data::Dumper;
 
@@ -145,7 +145,7 @@ sub test_form {
             is_deeply($dtv->errors_as_hashref, $spec{error_hash},
                       "Errors match");
         }
-        ok($dtv->errors, $spec{message} . "\n" . $dtv->packed_errors . "\n");
+        ok($dtv->errors, $spec{message} . " " . $dtv->packed_errors);
     } else {
         is_deeply($clean, $expected, $spec{message});
     }
@@ -166,7 +166,66 @@ test_form (
            message => "Invalid email",
            error_hash => { mail => [ 'fqdn' ] },
            fail => 1,
-           debug => 1,
+           debug => 0,
+          );
+
+test_form (
+           dtvoptions => {},
+           form => {
+                    mail => 'melmothx@google.it',
+                    mail2 => 'invalid+ciao@asdf_daslf',
+                   },
+           expected => {},
+           message => "Invalid email2",
+           error_hash => { mail2 => [ 'fqdn' ] },
+           fail => 1,
+           debug => 0,
+          );
+
+
+test_form (
+           dtvoptions => {},
+           form => {
+                    mail => 'melmothx@google.it',
+                    mail2 => 'invalid+ciao@asdf-daslf.it',
+                   },
+           expected => {},
+           message => "Invalid email2",
+           error_hash => { mail2 => [ 'mxcheck' ] },
+           fail => 1,
+           debug => 0,
+          );
+
+print "Testing all the required\n";
+
+foreach my $requi (qw/institute region country city type/) {
+    test_form (
+               dtvoptions => {},
+               form => {
+                        $requi => ""
+                   },
+               expected => {},
+               message => "Missing $requi",
+               error_hash => { $requi => [ 'required' ] },
+               fail => 1,
+               debug => 0,
+              );
+}
+
+test_form (
+           dtvoptions => {},
+           form => {
+                    mail => ' melmothx@google.it ',
+                    mail2 => ' marco.erika@google.it ',
+                   },
+           expected => {
+                        mail => 'melmothx@google.it',
+                        mail2 => 'marco.erika@google.it',
+                       },
+           message => "Mails are valid and whitespace stripped",
+           #           error_hash => { mail2 => [ 'mxcheck' ] },
+           fail => 0,
+           debug => 0,
           );
 
 
