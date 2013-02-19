@@ -25,7 +25,7 @@ my $form = Data::Transpose::Validator->new(stripwhite => 1);
 my %sc = (
           email => {
                     validator => {
-                                  class => 'Data::Transpose::EmailValid',
+                                  class => 'EmailValid',
                                   options => {
                                               a => 1,
                                               b => 2,
@@ -38,7 +38,7 @@ my %sc = (
                    },
           password => {
                        validator => {
-                                     class => 'Data::Transpose::PasswordPolicy',
+                                     class => 'PasswordPolicy',
                                      options => {
                                                  minlength => 10,
                                                  maxlength => 50,

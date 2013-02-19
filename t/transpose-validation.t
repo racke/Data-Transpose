@@ -18,6 +18,7 @@ my $schema = [
                name => "password",
                validator => {
                              class => 'Data::Transpose::PasswordPolicy',
+                             absolute => 1,
                              options => {
                                          minlength => 10,
                                          maxlength => 50,

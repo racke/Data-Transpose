@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 27;
+use Test::More tests => 46;
 use Data::Transpose::Validator;
 use Data::Dumper;
 
@@ -66,7 +66,8 @@ sub get_schema {
                   },
                   { name => 'open',
                     validator => {
-                                  class => 'Set',
+                                  class => 'Data::Transpose::Validator::Set',
+                                  absolute => 1,
                                   options => {
                                               list => [qw/Yes No/],
                                              }
@@ -212,6 +213,22 @@ foreach my $requi (qw/institute region country city type/) {
               );
 }
 
+print "Testing all the required with empty space\n";
+
+foreach my $requi (qw/institute region country city type/) {
+    test_form (
+               dtvoptions => {},
+               form => {
+                        $requi => " "
+                   },
+               expected => {},
+               message => "Missing $requi",
+               error_hash => { $requi => [ 'required' ] },
+               fail => 1,
+               debug => 0,
+              );
+}
+
 test_form (
            dtvoptions => {},
            form => {
@@ -229,4 +246,50 @@ test_form (
           );
 
 
+test_form (
+           dtvoptions => {},
+           form => {
+                    latitude => -91,
+                    longitude => "kadlfkj",
+                    year => "lksdf",
+                    open => 'yes',
+                    website => 'ft__asdf',
+                   },
+           expected => {},
+           message => "Wrong year, lat and long",
+           error_hash => {
+                          'longitude' => [
+                                          'notanumber'
+                                         ],
+                          'latitude' => [
+                                         'outofrange'
+                                        ],
+                          'year' => [ 'notanumber', 'notinteger' ],
+                          'open' => [ 'missinginset' ],
+                          website => [ 'badurl' ],
+                         },
+           fail => 1,
+           debug => 0
+          );
 
+
+test_form (
+           dtvoptions => {},
+           form => {
+                    latitude => " -89 ",
+                    longitude => " 50 ",
+                    year => " 2012 ",
+                    open => ' Yes ',
+                    website => ' http://google.it ',
+                   },
+           expected => {
+                        latitude => -89,
+                        longitude => 50,
+                        year => 2012,
+                        open => 'Yes',
+                        website => 'http://google.it',
+                       },
+           message => "Finally a good form!",
+           fail => 0,
+           debug => 1,
+          );

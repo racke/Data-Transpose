@@ -60,7 +60,7 @@ sub is_valid {
             }
         }
         elsif (ref($arg) ne '') {
-            die "Bad argumetn\n";
+            die "Bad argument\n";
         }
         else {
             push @input, $arg;

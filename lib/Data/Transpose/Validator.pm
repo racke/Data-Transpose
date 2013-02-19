@@ -161,14 +161,66 @@ or
   
   ## other code here
 
-  $dtv-prepare(
+  $dtv->prepare(
                email => {
                          validator => "EmailValid"
                         }
                );
 
-=cut
 
+The validator value can be an string, a hashref or a coderef.
+
+When a string is passed, the class which will be loaded will be
+prefixed by C<Data::Transpose::Validator::> and initialized without
+arguments.
+
+If a coderef is passed as value of validator, a new object
+L<Data::Transpose::Validator::Subrefs> is created, with the coderef as
+validator.
+
+If a hashref is passed as value of validator, it must contains the key
+C<class> and optionally C<options> as an hashref. As with the string,
+the class will be prefixed by C<Data::Transpose::Validator::>, unless
+you pass the C<absolute> key set to a true value.
+
+
+  $dtv->prepare(
+          email => {
+              validator => "EmailValid",
+               },
+  
+          # ditto
+          email2 => {
+               validator => {
+                       class => "EmailValid",
+                      }
+              },
+  
+          # tritto
+          email3 => {
+               validator => {
+                       class => "Data::Transpose::Validator::EmailValid",
+                       absolute => 1,
+                      }
+              },
+
+          # something more elaborate
+          passowrd => {
+                 validator => {
+                       class => PasswordPolicy,
+                       options => {
+                             minlength => 10,
+                             maxlength => 50,
+                             disabled => {
+                                    username => 1,
+                                   }
+                            }
+                      }
+              }
+         );
+  
+
+=cut
 
 sub prepare {
     my $self = shift;
@@ -498,6 +550,9 @@ sub _build_object {
         elsif ($type eq 'HASH') {
             $class = $validator->{class};
             die "Missing class for $field\n" unless $class;
+            unless ($validator->{absolute}) {
+                $class = __PACKAGE__ . '::' . $class;
+            }
             $classoptions = $validator->{options} || {};
             # print Dumper($classoptions);
         }
