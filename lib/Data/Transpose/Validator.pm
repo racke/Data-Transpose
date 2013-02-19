@@ -351,7 +351,7 @@ sub transpose {
                 $output{$field} = $value;
             }
         }
-
+        
 
         # if it's required and the only thing provided is "" or undef,
         # we set an error
@@ -388,9 +388,28 @@ sub transpose {
             die "Unknown fields in input: ", join(',', keys %status), "\n";
         }
     }
-    # do other stuff, check the options, filter, set  and return it
+    # remember what we did
+    $self->transposed_data(\%output);
+    # return undef if we have errors, or return the data
     return if $self->errors;
-    return \%output;
+    return $self->transposed_data;
+}
+
+=head2 transposed_data
+
+Accessor to the transposed hash. This is handy if you want to retrieve
+the filtered data after a failure (because C<transpose> will return
+undef in that case).
+
+=cut
+
+
+sub transposed_data {
+    my ($self, $hash) = @_;
+    if ($hash) {
+        $self->{transposed} = $hash;
+    }
+    return $self->{transposed};
 }
 
 
@@ -460,6 +479,7 @@ sub errors_as_hashref {
     my $self = shift;
     return $self->_get_errors_field(0);
 }
+
 
 =head2 packed_errors($fieldsep, $separator)
 
