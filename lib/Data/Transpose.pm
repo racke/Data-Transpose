@@ -13,11 +13,11 @@ Data::Transpose - Transpose, filter and validate data
 
 =head1 VERSION
 
-Version 0.003
+Version 0.0004
 
 =cut
 
-our $VERSION = '0.0003';
+our $VERSION = '0.0004';
 
 =head1 SYNOPSIS
 
