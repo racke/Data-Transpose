@@ -7,6 +7,43 @@ use Try::Tiny;
 use Data::Dumper;
 use Data::Transpose::Validator::Subrefs;
 
+=head1 NAME
+
+Data::Transpose::Validator - Filter and validate data.
+
+=head1 SYNOPSIS
+
+  use Data::Transpose::Validator;
+  my $dtv = Data::Transpose::Validator->new();
+  $dtv->prepare(email => {validator => 'EmailValid',
+                          required => 1},
+                password => {validator => 'PasswordPolicy',
+                             required => 1}
+               );
+  
+  my $form = {
+              email => "aklasdfasdf",
+              password => "1234"
+             };
+  
+  my $clean = $dtv->transpose($form);
+  if ($clean) {
+      # the validator says it's valid, and the hashref $clean is validated
+      # $clean is the validated hash
+  } else {
+      my $errors = $dtv->errors; # arrayref with the errors
+      # old data
+      my $invalid_but_filtered = $dtv->transposed_data; # hashref with the data
+  }
+
+=head1 DESCRIPTION
+
+This module provides an interface to validate and filter hashrefs,
+usually (but not necessarily) from HTML forms.
+
+=head1 METHODS
+
+
 =head2 new
 
 The constructor. It accepts a hash as argument, with options:
@@ -623,3 +660,27 @@ sub reset_self {
 }
 
 1;
+
+__END__
+
+=head2 EXPORT
+
+None by default.
+
+=head1 SEE ALSO
+
+L<http://xkcd.com/936/>
+
+=head1 AUTHOR
+
+Marco Pessotto, E<lt>melmothx@gmail.comE<gt>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2013 by Marco Pessotto
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.10.1 or,
+at your option, any later version of Perl 5 you may have available.
+
+=cut
