@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Module::Load;
 use Try::Tiny;
-use Data::Dumper;
+# use Data::Dumper;
 use Data::Transpose::Validator::Subrefs;
 
 =head1 NAME
