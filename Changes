@@ -1,6 +1,6 @@
 Revision history for Data::Transpose
 
-0.0004
+0.0004 Thu Feb 21 13:46:56 2013 CET
 
     * Added Data::Transpose::Validator, a module to validate incoming
       data (form-oriented).
