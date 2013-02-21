@@ -3,6 +3,8 @@ package Data::Transpose::EmailValid;
 use strict;
 use warnings;
 
+use base 'Data::Transpose::Validator::Base';
+
 use Email::Valid;
 
 
@@ -47,6 +49,68 @@ sub new {
     return $self;
 }
 
+# accessor read only to the Email::Valid object
+
+=head2 email_valid
+
+Accessor to the Email::Valid object
+
+=cut
+
+sub email_valid {
+    my $self = shift;
+    return $self->{email_valid};
+}
+
+=head2 input
+
+Accessor to the input email string.
+
+=cut 
+
+sub input {
+    my ($self, $input) = @_;
+    if (defined $input) {
+        $self->{input} = $input;
+    }
+    return $self->{input};
+}
+
+=head2 output
+
+Accessor to the output email string.
+
+=cut
+
+sub output {
+    my ($self, $output) = @_;
+    if (defined $output) {
+        $self->{output} = $output;
+    }
+    return $self->{output};
+
+
+}
+
+=head2 reset_all 
+
+Clear all the internal data
+
+=cut
+
+
+sub reset_all {
+    my $self = shift;
+    $self->reset_errors;
+    foreach (qw/input output/) {
+        delete $self->{$_} if exists $self->{$_}
+    }
+}
+
+
+
+
+
 =head2 $obj->is_valid($emailstring);
 
 Returns the email passed if valid, false underwise.
@@ -60,28 +124,27 @@ sub is_valid {
     my ($self, $email) = @_;
 
     # overwrite old data
-    $self->{input} = $email;
-    delete $self->{output};
-    delete $self->{reason};
+    $self->reset_all;
 
-    # correct common typos
-    $email = $self->_autocorrect($email);
+    $self->input($email);
+
+    # correct common typos # Maybe add an option for this?
+    $email = $self->_autocorrect;
 
     # do validation
-    $email = $self->{email_valid}->address($email);
+    $email = $self->email_valid->address($email);
     unless ($email) {
-        $self->{reason} = $self->{email_valid}->details;
+        $self->error($self->email_valid->details);
         return;
     }
 
     # check for bad characters
     if ($email =~ /'/) {
-        $self->{reason} = 'bad_chars';
+        $self->error('bad_chars');
         return;
     }
 
-    $self->{output} = $email;
-
+    $self->output($email);
     return $email;
 }
 
@@ -91,7 +154,7 @@ Returns the last checked email.
 
 =cut
 
-sub email  { (shift)->{output} }
+sub email  { shift->output }
 
 =head2 $obj->reason
 
@@ -101,7 +164,7 @@ successful.
 =cut
 
 
-sub reason { (shift)->{reason} }
+sub reason { shift->error }
 
 =head2 $obj->suggestion
 
@@ -113,10 +176,10 @@ was different from the output, false otherwise.
 
 sub suggestion {
     my ($self) = @_;
-    return if $self->{reason};
+    return if $self->error;
 
-    if ($self->{input} ne $self->{output}) {
-        return $self->{output};
+    if ($self->input ne $self->output) {
+        return $self->output;
     }
 
     return;
@@ -124,17 +187,17 @@ sub suggestion {
 
 
 sub _autocorrect {
-    my ($self, $email) = @_;
-
+    my $self = shift;
+    my $email = $self->input;
     # trim
     $email =~ s/^\s+//;
     $email =~ s/\s+$//;
-
     # .ocm -> .com
     foreach (qw/aol gmail hotmail yahoo/) {
         $email =~ s/\b$_\.ocm$/$_.com/;
     }
-
+    # setting the error breaks the retrocompatibility
+    # $self->error("typo?");
     return $email;
 }
 

@@ -4,6 +4,15 @@ lib/Data/Transpose/EmailValid.pm
 lib/Data/Transpose/Field.pm
 lib/Data/Transpose/Group.pm
 lib/Data/Transpose/PasswordPolicy.pm
+lib/Data/Transpose/Validator.pm
+lib/Data/Transpose/Validator/Base.pm
+lib/Data/Transpose/Validator/EmailValid.pm
+lib/Data/Transpose/Validator/NumericRange.pm
+lib/Data/Transpose/Validator/PasswordPolicy.pm
+lib/Data/Transpose/Validator/Set.pm
+lib/Data/Transpose/Validator/String.pm
+lib/Data/Transpose/Validator/Subrefs.pm
+lib/Data/Transpose/Validator/URL.pm
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
@@ -18,3 +27,8 @@ t/transpose-group.t
 t/transpose-passwordpolicy.t
 t/transpose-simple.t
 t/transpose-unknown.t
+t/transpose-validation-base.t
+t/transpose-validation-classes.t
+t/transpose-validation-forms.t
+t/transpose-validation.t
+t/transpose-validator-options.t

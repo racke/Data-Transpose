@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 70;
+use Test::More tests => 83;
 BEGIN { use_ok('Data::Transpose::PasswordPolicy') };
 
 
@@ -40,26 +40,32 @@ is($pv->mindiffchars, 6, "mindiffchars works (6)");
 
 $pv->password("Aklsxdflasjdflaj89q3klasxwdd!");
 
-$pv->reset_errors;
+# $pv->reset_errors;
 
 ok($pv->is_valid, "password '". $pv->password . "' is valid");
 
-$pv->reset_errors;
+# $pv->reset_errors;
+
+ok($pv->is_valid("AXvx&/ad832kdzidsk43dlsf"),
+   $pv->password . 'is valid too (passed via ->is_valid($pass)');
+
+print $pv->error;
+
+# $pv->reset_errors;
 
 $pv->password("Aklsxdflasjdflaj89q3klasxwdd_");
 
 ok($pv->is_valid, $pv->password . " is valid");
 
-$pv->reset_errors;
+# $pv->reset_errors;
 # print $pv->error;
-
 
 # try the settings
 $pv->maxlength(10);
 $pv->minlength(3);
 ok(!$pv->is_valid, "password is not valid with limits 3 and 10");
 
-$pv->reset_errors;
+# $pv->reset_errors;
 
 $pv->maxlength(length $pv->password);
 ok($pv->is_valid, "password now is valid with lenght " . $pv->maxlength);
@@ -151,8 +157,10 @@ foreach my $enable (qw/mixed digits common specials varchars/) {
     $pv->enable($enable);
     ok(!$pv->is_valid, "But not anymore, with $enable enabled...");
     ok($pv->error, $pv->error);
+    my ($errcode) = $pv->error_codes; # pick the first value
+    is($errcode, $enable, "Checking the error code $enable");
     $pv->disable($enable);
-    $pv->reset_errors;
+    #    $pv->reset_errors;
 }
 
 my %checks = ("m4rc0" => "username",
@@ -167,18 +175,21 @@ while (my ($password, $enable) = each %checks) {
     $pv->enable($enable);
     ok(!$pv->is_valid, "But not anymore, with $enable enabled...");
     ok($pv->error, $pv->error);
+    my ($errcode) = $pv->error_codes; # pick the first value
+    is($errcode, $enable, "Checking the error code $enable");
     $pv->disable($enable);
-    $pv->reset_errors;
+    # $pv->reset_errors;
 }
 
 $pv->enable("patterns");
 $pv->patternlength(4);
 $pv->password("asd123");
 ok($pv->is_valid, $pv->password . " is valid when patternlength is 4");
-$pv->reset_errors;
+# $pv->reset_errors;
 $pv->patternlength(3);
 ok(!$pv->is_valid, "After setting to 3, it's not anymore: " . $pv->error);
-
+my ($errcode) = $pv->error_codes;
+is($errcode, 'patterns', "Checking error code length");
 
 # speed test;
 
@@ -195,3 +206,38 @@ my $newtime = time();
 my $average = ($newtime - $time) / $tries;
 ok(($average < 0.2), "checking that each password takes less then 0.2 second: $average");
 
+my $lasttest = Data::Transpose::PasswordPolicy->new(
+                                                    {username => "marco",
+                                                     password => "pass1234",
+                                                    });
+
+$lasttest->is_valid;
+my @errors = $lasttest->error;
+
+print Dumper(\@errors);
+my @expected = (
+                [
+                 'length',
+                 'Wrong length'
+                ],
+                [
+                 'specials',
+                 'No special characters'
+                ],
+                [
+                 'common',
+                 'Found common password'
+                ],
+                [
+                 'mixed',
+                 'No mixed case'
+                ],
+                [
+                 'patterns',
+                 'Found common patterns: 123, 234'
+                ]
+               );
+
+is_deeply(\@errors, \@expected, "Checking resulting array");
+is($lasttest->error, join("; ", map { $_->[1] } @expected),
+   "Checking error string");

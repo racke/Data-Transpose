@@ -4,6 +4,8 @@ use 5.010001;
 use strict;
 use warnings;
 # use Data::Dumper;
+use base 'Data::Transpose::Validator::Base';
+
 
 our $VERSION = '0.02';
 
@@ -86,9 +88,17 @@ credentials provided as hashref.
 =cut
 
 sub new {
-    my $class = shift;
-    my $new = shift;
+    my ($class, @args) = @_;
     my $self = {};
+    my $new;
+    if (@args % 2 == 0) {
+        my %opts = @args;
+        $new = \%opts
+    }
+    else {
+        $new = shift(@args);
+    }
+
     if ($new and (ref($new) eq 'HASH')) {
 	foreach my $par (qw/username password/) {
 	    if ($new->{$par}) {
@@ -269,7 +279,7 @@ sub password_length_ok {
 	($self->password_length <= $self->maxlength)) {
 	return undef;
     } else {
-	return "Wrong length";
+	return ["length" => "Wrong length"];
     }
 }
 
@@ -305,11 +315,14 @@ my %leetperms = (
 		 'z' => "z", 
 		 '0' => qr{[o0]},
 		 '1' => qr{[l1]},
+                 '2' => "2",
 		 '3' => qr{[e3]},
 		 '4' => qr{[4a]},
 		 '5' => qr{[5s]},
+                 '6' => "6",
 		 '7' => qr{[7t]},
 		 '8' => qr{[8b]},
+                 '9' => "9",
 		);
 
 my @toppassword = ( 'password', 'link', '1234', 'work', 'god', 'job',
@@ -331,11 +344,11 @@ Disable keyword: C<username>
 # check if the password doesn't contain the username
 sub password_has_username {
     my $self = shift;
-    return "Missing username" unless $self->username;
+    return [ username => "Missing username" ] unless $self->username;
 
     my $match = _leet_string_match($self->password, $self->username);
     if ($match) {
-	return "Found username $match in password";
+	return [ username => "Found username $match in password" ];
     } else {
 	return undef
     }
@@ -362,7 +375,8 @@ sub password_has_common_password {
 	}
     }
     if (@found) {
-	return "Found common password"
+        # warn join(" ", @found) . "\n";
+	return [ common => "Found common password" ];
     }
     else {
 	return undef;
@@ -391,6 +405,7 @@ sub _leet_string_match {
     # and use it as re against the provided string
     #    warn "checking $lcstring against $re\n";
     if ($lcstring =~ m/$re/i) {
+        # warn $re . "\n";
 	# return false if the re is present in the string
 	return $lcmatch
     } else {
@@ -429,7 +444,7 @@ sub password_has_enough_different_char {
     # check the number of chars
     my $totalchar = scalar(keys(%found));
     if ($totalchar <= $self->mindiffchars) {
-	return "Not enough different characters"
+	return [ varchars => "Not enough different characters" ];
     }
 
     my %reportconsec;
@@ -448,8 +463,10 @@ sub password_has_enough_different_char {
 	    $passwdlen = $passwdlen - $rep; 
 	}
 	if ($passwdlen < $self->minlength) {
-	    return "Found too many repetitions, lowering the effectivelength: "
-	      . (join(", ", (keys %reportconsec)));
+            my $errstring = "Found too many repetitions, "
+              . "lowering the effectivelength: "
+                . (join(", ", (keys %reportconsec)));
+	    return [ varchars => $errstring ];
 	}
     }
 
@@ -463,7 +480,7 @@ sub password_has_enough_different_char {
 	$max = $v if ($v > $max);
     }
     if ($max > $maxrepeat) {
-	return "Found too many repetions";
+	return [ varchars => "Found too many repetions" ];
     }
     return undef;
 }
@@ -483,7 +500,7 @@ sub password_has_mixed_chars {
     if (($pass =~ m/[a-z]/) and ($pass =~ m/[A-Z]/)) {
 	return undef
     } else {
-	return "No mixed case"
+	return [ mixed => "No mixed case"];
     }
 }
 
@@ -501,7 +518,7 @@ sub password_has_specials {
     if ($self->password =~ m/[\W_]/) {
 	return undef
     } else {
-	return "No special characters";
+	return [ specials => "No special characters" ];
     }
 }
 
@@ -519,7 +536,7 @@ sub password_has_digits {
     if ($self->password =~ m/\d/) {
 	return undef
     } else {
-	return "No digits in the password"
+	return [ digits => "No digits in the password" ];
     }
 }
 
@@ -536,7 +553,7 @@ sub password_has_letters {
     if ($self->password =~ m/[a-zA-Z]/) {
 	return undef
     } else {
-	return "No letters in the password"
+	return [letters => "No letters in the password" ];
     }
 }
 
@@ -573,7 +590,8 @@ sub password_has_patterns {
 	}
     }
     if (@found) {
-	return "Found common patterns: " . join(", ", @found);
+        my $errstring = "Found common patterns: " . join(", ", @found);
+	return [ patterns => $errstring ];
     } else {
 	return undef;
     }
@@ -586,16 +604,28 @@ sub password_has_patterns {
 
 Return the password if matches the policy or a false value if not.
 
+For convenience, this method can accept the password to validate as
+argument, which will overwrite the one provided with the C<password>
+method (if it was set).
+
 =cut
 
 
 
 sub is_valid {
     my $self = shift;
+    my $password = shift;
+    if (defined $password and $password ne "") {
+        $self->password($password);
+    }
     unless ($self->password) {
-	$self->error("Password is missing");
+	$self->error([missing => "Password is missing"]);
 	return undef;
     }
+    # reset the errors, we are going to do the checks anew;
+    $self->reset_errors;
+
+
 
     # To disable this, set the minimum to 1 and the max
     # to 255, but it makes no sense.
@@ -646,33 +676,30 @@ sub is_valid {
 With argument, set the error. Without, return the errors found in the
 password.
 
+In list context, we pass the array with the error codes and the strings.
+In scalar context, we return the concatenated error strings.
+
+Inherited from Data::Transpose::Validator::Base;
+
+=cut
+
+=head2 error_codes
+
+Return a list of the error codes found in the password. The error
+codes match the options. (e.g. C<mixed>, C<patterns>).
+
+If you want the verbose string, you need the C<error> method.
+
 =cut
 
 
-sub error {
-    my ($self, $error) = @_;
-    if ($error) {
-	# warn "Setting $error";
-	if (defined $self->{error}) {
-	    $self->{error} .= $error . "; ";
-	} else {
-	    $self->{error} = $error . "; ";
-	}
-    }
-    return $self->{error};
-}
+
 
 =head2 $obj->reset_errors
 
 Clear the object from previous errors, in case you want to reuse it.
 
 =cut
-
-
-sub reset_errors {
-    my $self = shift;
-    $self->{error} = undef;
-}
 
 =head2 $obj->disable("mixed", "letters", "digits", [...])
 
