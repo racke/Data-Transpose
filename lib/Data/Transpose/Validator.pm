@@ -94,7 +94,10 @@ sub new {
             $defaults{$k} = $options{$k}
         }
     }
+
     $self->{options} = \%defaults;
+    $self->{success} = undef;
+
     bless $self, $class;
 }
 
@@ -427,9 +430,28 @@ sub transpose {
     }
     # remember what we did
     $self->transposed_data(\%output);
-    # return undef if we have errors, or return the data
-    return if $self->errors;
+
+    if ($self->errors) {
+        # return undef if we have errors
+        $self->{success} = 0;
+        return;
+    }
+
+    # return the data
+    $self->{success} = 1;
+
     return $self->transposed_data;
+}
+
+=head2 success
+
+Returns true on success, 0 on failure and undef validation
+didn't take place.
+
+=cut
+
+sub success {
+    return shift->{success};
 }
 
 =head2 transposed_data
@@ -655,6 +677,8 @@ This is called by C<transpose> before doing any other operation
 
 sub reset_self {
     my $self = shift;
+
+    $self->{success} = undef;
     $self->_reset_objects;
     $self->_reset_errors;
 }
