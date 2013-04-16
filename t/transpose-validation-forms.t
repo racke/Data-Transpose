@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 46;
+use Test::More tests => 63;
 use Data::Transpose::Validator;
 use Data::Dumper;
 
@@ -126,11 +126,12 @@ print "Testing email\n";
 
 sub test_form {
     my %spec = @_;
-    my ($dtv, $form, $clean, $expected);
+    my ($dtv, $form, $clean, $success, $expected);
     $dtv = Data::Transpose::Validator->new(%{$spec{dtvoptions}});
     $dtv->prepare(get_schema());
     $form = get_form(%{$spec{form}});
     $clean = $dtv->transpose($form);
+    $success = $dtv->success;
     $expected = get_expected(%{$spec{expected}});
 
     if ($spec{debug}) {
@@ -139,6 +140,7 @@ sub test_form {
     
     if ($spec{fail}) {
         is($clean, undef, "transposing returns undef");
+        ok($success == 0);
         if ($spec{debug}) {
             print Dumper($dtv->errors_as_hashref);
         }
@@ -148,6 +150,7 @@ sub test_form {
         }
         ok($dtv->errors, $spec{message} . " " . $dtv->packed_errors);
     } else {
+        ok($success);
         is_deeply($clean, $expected, $spec{message});
     }
 }

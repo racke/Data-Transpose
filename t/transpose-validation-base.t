@@ -5,7 +5,7 @@ use warnings;
 use Data::Transpose::Validator;
 use Data::Dumper;
 
-use Test::More tests => 1;
+use Test::More tests => 2;
 
 
 # failing test which should illustrate the usage
@@ -96,6 +96,7 @@ if ($clean) {
 # print Dumper($form);
 
 ok($form->errors);
+ok(defined $form->success && $form->success == 0);
 
 # print Dumper($form->field);
 # print join("\n", $form->faulty_fields);
