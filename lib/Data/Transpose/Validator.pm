@@ -260,6 +260,47 @@ you pass the C<absolute> key set to a true value.
          );
   
 
+=head3 Bundled classes
+
+Each class has its own documentation for the available options. The
+options are passed to the C<new> constructor of the validator's class.
+
+=over 4
+
+=item EmailValid
+
+See L<Data::Transpose::EmailValid> (no special options)
+
+=item NumericRange
+
+See L<Data::Transpose::Validator::NumericRange>
+
+Options: C<min>, C<max>, C<integer>
+
+=item PasswordPolicy
+
+See L<Data::Transpose::PasswordPolicy> (plenty of options, refers to
+the documentation).
+
+=item Set
+
+See L<Data::Transpose::Validator::Set>.
+
+Options: C<list> pointing to an arrayref and the C<multiple> boolean
+(to validate an arrayref).
+
+=item String
+
+See L<Data::Transpose::Validator::String> (no special options).
+
+=item URL
+
+See L<Data::Transpose::Validator::URL> (no special options).
+
+=item 
+
+=back
+
 =cut
 
 sub prepare {

@@ -6,7 +6,7 @@ use base 'Data::Transpose::EmailValid';
 
 =head1 NAME
 
-Data::Transpose::Validator::EmailValid - Alias for Data::Transpose::EmailValid
+Data::Transpose::Validator::EmailValid - Alias for L<Data::Transpose::EmailValid>
 
 =cut
 
