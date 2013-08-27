@@ -17,6 +17,75 @@ Data::Transpose::Validator::CreditCard - Validator for CC numbers
 This module wraps L<Business::CreditCard> to validate a credit card
 number.
 
+=head2 new(country => 'de', types => ['VISA card', 'MasterCard', ... ])
+
+Constructor. The options as the following:
+
+=over 4
+
+=item country 
+
+Two letters country code (for card type detection purposes). Defaults
+to "US" (as per L<Business::CreditCard> defaults).
+
+=item types
+
+List of accepted CC type. The string is case insensitive, but must
+match the following recognized types. It's unclear how much reliable
+is this, so use with caution. Recognized types:
+
+  American Express card
+  BankCard
+  China Union Pay
+  Discover card
+  Isracard
+  JCB
+  Laser
+  MasterCard
+  Solo
+  Switch
+  VISA card
+
+=back
+
+=cut
+
+sub new {
+    my $class = shift;
+    my %opts = @_;
+    my $self = {
+                country => "US",
+                types => [],
+               };
+
+    if ($opts{country}) {
+        $self->{country} = uc($opts{country});
+    }
+
+    if ($opts{types}) {
+        $self->{types} = [ @{ $opts{types} } ];
+    }
+
+    bless $self, $class;
+}
+
+sub country {
+    my ($self, $country) = @_; 
+    if (defined $country) {
+        $self->{country} = uc($country);
+    }
+    return $self->{country};
+}
+
+sub types {
+    my ($self, $types) = shift;
+    if (defined $types and ref($types) eq 'ARRAY') {
+        $self->{types} = [ @$types ];
+    }
+    return @{$self->{types}};
+}
+
+
 =head2 is_valid
 
 Check with C<ref> if the argument is a valid credit card and return it
@@ -32,6 +101,16 @@ sub is_valid {
     }
     else {
         $self->error(["invalid_cc", cardtype($string) . " (invalid)"]);
+    }
+    if (!$self->error) {
+        if (my @types = $self->types) {
+            $Business::CreditCard::Country = $self->country;
+            my $cardtype = cardtype($string);
+            unless (grep { lc($_) eq lc($cardtype) } @types) {
+                $self->error(["cc_not_accepted",
+                              "$cardtype not in " . join(", ", @types)]);
+            }
+        }
     }
     $self->error ? return 0 : return $string;
 }

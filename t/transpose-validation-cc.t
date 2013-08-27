@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 73;
+use Test::More tests => 102;
 use Data::Transpose::Validator::CreditCard;
 use Data::Transpose::Validator;
 use Data::Dumper;
@@ -32,4 +32,29 @@ foreach my $type (keys  %$test_nums) {
         ok($errorstring =~ m/^\Q$type\E \(invalid\)/, "$type => $errorstring");
     }
 }
+
+diag "Testing types";
+
+$v = Data::Transpose::Validator::CreditCard->new(country => 'DE',
+                                                 types => ["visa card",
+                                                           "mastercard"]);
+
+$test_nums = $v->test_cc_numbers;
+
+foreach my $type (keys %$test_nums) {
+    if ($type eq 'VISA card' or
+        $type eq 'MasterCard') {
+        foreach my $num (@{$test_nums->{$type}}) {
+            ok($v->is_valid($num), "$type $num is valid");
+        }
+    }
+    else {
+        foreach my $num (@{$test_nums->{$type}}) {
+            ok(!$v->is_valid($num), "$type $num is not valid");
+            ok($v->error, "$type $num " . $v->error);
+        }
+    }
+        
+}
+
 
