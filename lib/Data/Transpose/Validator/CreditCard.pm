@@ -12,6 +12,64 @@ use Business::CreditCard;
 
 Data::Transpose::Validator::CreditCard - Validator for CC numbers
 
+=head1 SYNOPSIS
+
+From inside L<Data::Transpose::Validator>
+
+  $dtv->prepare(
+                cc_number => {
+                              validator => {
+                                            class => 'CreditCard',
+                                            options => {
+                                                        types => [ "visa card",
+                                                                  "mastercard",
+                                                                  "American Express card",
+                                                                  "Discover card" ],
+                                                        country => 'DE',
+                                                       },
+                                           },
+                              required => 1,
+                             },
+                cc_month => {
+                             validator => {
+                                           class => 'NumericRange',
+                                           options => {
+                                                       min => 1,
+                                                       max => 12,
+                                                      },
+                                          },
+                             required => 1,
+                            },
+                cc_year => {
+                            validator => {
+                                          class => 'NumericRange',
+                                          options => {
+                                                      min => 2013,
+                                                      max => 2023,
+                                                     },
+                                         },
+                            required => 1,
+                           }
+               );
+  my $form = {
+              cc_number => ' 4111111111111111 ',
+              cc_month => '12',
+              cc_year => '2014',
+             };
+  
+  my $clean = $dtv->transpose($form);
+  
+  ok($clean, "validation ok");
+  
+Or, as stand-alone module:
+
+  my $v = Data::Transpose::Validator::CreditCard->new(country => 'DE',
+                                                      types => ["visa card",
+                                                                "mastercard"]);
+  ok($v->is_valid("4111111111111111"));
+  ok(!$v->is_valid("4111111111111112"));
+
+
 =head1 DESCRIPTION
 
 This module wraps L<Business::CreditCard> to validate a credit card
