@@ -267,6 +267,12 @@ options are passed to the C<new> constructor of the validator's class.
 
 =over 4
 
+=item CreditCard
+
+See L<Data::Transpose::CreditCard>
+
+Options: C<types> and C<country>
+
 =item EmailValid
 
 See L<Data::Transpose::EmailValid> (no special options)
