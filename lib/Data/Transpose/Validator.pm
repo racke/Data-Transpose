@@ -6,6 +6,7 @@ use Module::Load;
 use Try::Tiny;
 # use Data::Dumper;
 use Data::Transpose::Validator::Subrefs;
+use Data::Transpose::Validator::Group;
 
 =head1 NAME
 
@@ -374,8 +375,6 @@ DEATH
     return $self->{fields}->{$field}
 }
 
-# return the sorted list of fields
-
 sub _sorted_fields {
     my ($self, $field) = @_;
     $self->{ordering} = [] unless defined $self->{ordering};
@@ -385,6 +384,52 @@ sub _sorted_fields {
     return @{$self->{ordering}};
 }
 
+# return the sorted list of fields
+
+=head2 group (name => $field1, $field2, $field3, ...)
+
+Create a named group of fields and schedule them for validation.
+
+The logic is:
+
+First, the individual fields are normally checked according to the
+rules provided with C<prepare> or C<field>.
+
+If they pass the test, the group operation are checked.
+
+Group by itself returns a L<Data::Transpose::Validator::Group> object,
+so you can call methods on them to set the rules.
+
+=head2 groups
+
+Retrieve the list of the group objects scheduled for validation
+
+=cut
+
+sub group {
+    my ($self, $name, @objects) = @_;
+    my @group;
+    # check
+    die "Wrong usage, first argument must be a string!" unless $name && !ref($name);
+    foreach my $obj (@objects) {
+        my $field = $obj;
+        unless (ref($obj)) {
+            $field = $self->field($obj);
+        }
+        push @group, $field;
+    }
+    my $group = Data::Transpose::Validator::Group->new(name => $name,
+                                                       fields => \@group);
+    $self->{groups} ||= [];
+    push @{ $self->{groups} }, $group;
+    # store it in the dtv object and return it
+    return $group;
+}
+
+sub groups {
+    my $self = shift;
+    $self->{groups} ? return @{ $self->{groups} } : return;
+}
 
 =head2 transpose
 
@@ -410,6 +455,8 @@ sub transpose {
 
     # we loop over the schema
     foreach my $field ($self->_sorted_fields) {
+        my $obj = $self->field($field);
+        $obj->reset_dtv_value;
         my $value;
         # the incoming hash could not have such a field
         if (exists $status{$field}) {
@@ -457,12 +504,24 @@ sub transpose {
             next;
         } 
         # we have something, validate it
-        my $obj = $self->field($field);
         unless ($obj->is_valid($value)) {
             my @errors = $obj->error;
             $self->errors($field, \@errors)
         }
+        $obj->dtv_value($value);
     }
+
+
+    # if there is no error, check the groups
+    unless ($self->errors) {
+        foreach my $group ($self->groups) {
+            unless ($group->is_valid) {
+                my @errors = $group->error;
+                $self->errors($group->name, \@errors);
+            }
+        }
+    }
+
     # now the filtering loop has ended. See if we have still things in the hash.
     if (keys %status) {
         my $unknown = $self->option('unknown');

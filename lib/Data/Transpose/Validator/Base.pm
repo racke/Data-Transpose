@@ -70,6 +70,31 @@ sub dtv_options {
     return $self->{_dtv_options};
 }
 
+=head2 dtv_value
+
+On transposing, the value of the field is stored here.
+
+=cut
+
+sub dtv_value {
+    my $self = shift;
+    if (@_) {
+        $self->{_dtv_value} = shift;
+    }
+    defined $self->{_dtv_value} ? return $self->{_dtv_value} : return "";
+}
+
+=head2 reset_dtv_value
+
+Delete the dtv_value from the object
+
+=cut
+
+sub reset_dtv_value {
+    my $self = shift;
+    delete $self->{_dtv_value};
+}
+
 
 =head2 is_valid($what)
 
