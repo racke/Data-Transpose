@@ -117,10 +117,14 @@ $dtv->prepare($schema);
 ok($dtv->field_is_required("email"), "Now it is ");
 
 $dtv->field(email => { required => 1 });
-is_deeply ($dtv->field("email"), { required => 1 },
-           "Field email set with field");
 
-is(ref($dtv->field), "HASH", "All the fields retrieved with ->field");
+ok ($dtv->field("email")->required, "Field email set with field");
+
+eval {
+    $dtv->field;
+};
+ok ($@, "DTV died on field without arguments");
+
 
 # reset all
 

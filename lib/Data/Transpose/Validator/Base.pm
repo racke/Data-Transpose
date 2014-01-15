@@ -34,6 +34,43 @@ sub new {
     bless $self, $class;
 }
 
+=head2 required
+
+Set or retrieve the required option. Returns true if required, false
+otherwise.
+
+=cut
+
+sub required {
+    my $self = shift;
+    if (@_) {
+        $self->{_dtv_required} = shift;
+    }
+    return $self->{_dtv_required};
+}
+
+=head2 dtv_options
+
+Set or retrieve the Data::Transpose::Validator options. Given that the
+various classes have a different way to initialize the objects, this
+should be done only once the object has been built.
+
+E.g.
+
+   my $obj = $class->new(%classoptions);
+   $obj->dtv_options(\%dtv_options);
+
+=cut
+
+sub dtv_options {
+    my $self = shift;
+    if (@_) {
+        $self->{_dtv_options} = shift;
+    }
+    return $self->{_dtv_options};
+}
+
+
 =head2 is_valid($what)
 
 Main method. Return true if the variable passed is defined, false if

@@ -133,14 +133,10 @@ first defined value.
 sub option_for_field {
     my ($self, $option, $field) = @_;
     return unless ($field && $option);
-    my $hash = $self->field($field);
-    return unless ($hash and (ref($hash) eq 'HASH'));
+    my $hash = $self->field($field)->dtv_options;
     # print Dumper($hash);
-    if (exists $hash->{options}) {
-        if (exists $hash->{options}->{$option}) {
-            # higher priority option exists, so return that
-            return $hash->{options}->{$option};
-        }
+    if ($hash and (ref($hash) eq 'HASH') and exists $hash->{$option}) {
+        return $hash->{$option};
     }
     return $self->option($option) # return the global one;
 }
@@ -338,18 +334,28 @@ to be used only internally, but you can add individual fields with it
 
   $dtv->field(email => { required => 1 });
 
-  print(Dumper($dtv->field("email"));
+With 1 argument retrieves the object responsible for the validation of
+that field, so you can call methods on them:
 
-  print(Dumper($dtv->field);
+  $dtv->field(email => { required => 0 })->required(1);
+  $dtv->field('email')->required # return true
 
-With no arguments, it retrieves the hashref with all the fields, while
-with 1 argument retrieves the hashref of that specific field.
+WARNING: Earlier versions of this method without any argument would
+have retrieved the whole structure. Now it dies instead.
 
 =cut
 
 sub field {
     my ($self, $field, $args) = @_;
     # initialize
+    unless ($field) {
+        my $deprecation =<<'DEATH';
+As of version 0.0005, the retrieval of the whole structure without
+field argument is deprecated, as fields return an object instead!
+DEATH
+        die $deprecation unless $field;
+    }
+
     $self->{fields} = {} unless exists $self->{fields};
     
     if ($field and $args) {
@@ -359,20 +365,13 @@ sub field {
 
         #  validate the args and store them
         if ($args and (ref($args) eq 'HASH')) {
-            $self->{fields}->{$field} = $args;
+            my $obj = $self->_build_object($field, $args);
+            $self->{fields}->{$field} = $obj;
         }
         # add the field to the list
         $self->_sorted_fields($field);
     }
-
-    # behave as an accessor
-    if ($field) {
-        return $self->{fields}->{$field}
-    }
-    # retrieve all
-    else {
-        return $self->{fields};
-    }
+    return $self->{fields}->{$field}
 }
 
 # return the sorted list of fields
@@ -458,7 +457,7 @@ sub transpose {
             next;
         } 
         # we have something, validate it
-        my $obj = $self->_build_object($field);
+        my $obj = $self->field($field);
         unless ($obj->is_valid($value)) {
             my @errors = $obj->error;
             $self->errors($field, \@errors)
@@ -648,19 +647,15 @@ sub field_is_required {
     my ($self, $field) = @_;
     return unless defined $field;
     return 1 if $self->option("requireall");
-    return $self->field($field)->{required};
+    return $self->field($field)->required;
 }
 
 sub _build_object {
-    my $self = shift;
-    my $field = shift;
-    $self->{objects} = {} unless exists $self->{objects};
-
-    my $params = $self->field($field); # retrieve the conf
-
+    my ($self, $name, $params) = @_;
     my $validator = $params->{validator};
     my $type = ref($validator);
     my $obj;
+    # print "Building $name... " . Dumper($params);
     # if we got a string, the class is Data::Transpose::$string
     if ($type eq 'CODE') {
         $obj = Data::Transpose::Validator::Subrefs->new($validator);
@@ -675,7 +670,7 @@ sub _build_object {
         }
         elsif ($type eq 'HASH') {
             $class = $validator->{class};
-            die "Missing class for $field\n" unless $class;
+            die "Missing class for $name!" unless $class;
             unless ($validator->{absolute}) {
                 $class = __PACKAGE__ . '::' . $class;
             }
@@ -693,7 +688,12 @@ sub _build_object {
             $obj = $class->new(%$classoptions);
         };
     }
-    $self->{objects}->{$field} = $obj; # hold it
+    if ($params->{options}) {
+        $obj->dtv_options($params->{options});
+    }
+    if ($self->option('requireall') || $params->{required}) {
+        $obj->required(1);
+    }
     return $obj;
 }
 
