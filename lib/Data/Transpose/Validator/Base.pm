@@ -185,7 +185,29 @@ sub error_codes {
     return @out;
 }
 
+=head2 warnings
 
+Set or retrieve a list of warnings issued by the validator.
+
+=head2 reset_warnings
+
+Reset the warning list.
+
+=cut
+
+sub warnings {
+    my ($self, @warn) = @_;
+    $self->{warnings} ||= [];
+    if (@warn) {
+        push @{$self->{warnings}}, @warn;
+    }
+    return @{ $self->{warnings} };
+}
+
+sub reset_warnings {
+    my $self = shift;
+    delete $self->{warnings};
+}
 
 
 1;
