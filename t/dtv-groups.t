@@ -78,4 +78,26 @@ ok (!$res);
 ok ($dtv->errors);
 ok ($dtv->packed_errors);
 
+$res = $dtv->transpose( { password => '', confirm_password => 'c' });
+ok (!$res);
+ok ($dtv->errors);
+diag $dtv->packed_errors;
+
+
+$dtv = Data::Transpose::Validator->new;
+$dtv->field(password => { required => 1 });
+$dtv->field(confirm_password => { required => 1 });
+$dtv->group(passwords => "password", "confirm_password")->equal(0);
+
+$res = $dtv->transpose({password => "a", confirm_password => "c" });
+ok($res);
+my $group = $dtv->group('passwords');
+ok($group, "Object retrieved");
+ok($group->warnings, "Warning found") and diag $group->warnings;
+
+# even if equal, the validation doesn't pass because of the empty strings
+$res = $dtv->transpose({password => "", confirm_password => "" });
+ok(!$res);
+ok($dtv->errors) and diag join("\n", $dtv->packed_errors);
+
 done_testing;

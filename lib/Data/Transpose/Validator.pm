@@ -419,22 +419,34 @@ Retrieve the list of the group objects scheduled for validation
 
 sub group {
     my ($self, $name, @objects) = @_;
-    my @group;
     # check
-    die "Wrong usage, first argument must be a string!" unless $name && !ref($name);
-    foreach my $obj (@objects) {
-        my $field = $obj;
-        unless (ref($obj)) {
-            $field = $self->field($obj);
-        }
-        push @group, $field;
-    }
-    my $group = Data::Transpose::Validator::Group->new(name => $name,
-                                                       fields => \@group);
     $self->{groups} ||= [];
-    push @{ $self->{groups} }, $group;
-    # store it in the dtv object and return it
-    return $group;
+    die "Wrong usage, first argument must be a string!" unless $name && !ref($name);
+    if (@objects) {
+        my @group;
+        foreach my $field (@objects) {
+            my $obj = $field;
+            unless (ref($field)) {
+                $obj = $self->field($field);
+            }
+            # if we couldn't retrieve the field, die, we can't build the group
+            die "$obj could not be retrieved! Too early for this?" unless $obj;
+            push @group, $obj;
+        }
+        my $group = Data::Transpose::Validator::Group->new(name => $name,
+                                                           fields => \@group);
+
+        push @{ $self->{groups} }, $group;
+        # store it in the dtv object and return it
+        return $group;
+    }
+    # retrieve
+    foreach my $g (@{ $self->{groups} }) {
+        if ($g->name eq $name) {
+            return $g;
+        }
+    }
+    return;
 }
 
 sub groups {
@@ -748,7 +760,7 @@ sub _build_object {
             # print Dumper($classoptions);
         }
         else {
-            die "Wron usage. Pass a string, an hashref or a sub!\n";
+            die "Wrong usage. Pass a string, an hashref or a sub!\n";
         }
         # lazy loading, avoiding to load the same class twice
         try {

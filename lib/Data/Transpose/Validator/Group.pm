@@ -75,7 +75,9 @@ sub equal {
 
 =head2 is_valid
 
-Returns true if the group validates.
+Returns true if the group validates. If no check were done (because,
+e.g. you set equal => 0) this method returns true but sets a warning,
+which you can retrieve with -C<warnings>.
 
 =cut
 
@@ -83,9 +85,17 @@ Returns true if the group validates.
 sub is_valid {
     my $self = shift;
     $self->reset_errors;
+    $self->reset_warnings;
     my $valid = 1;
+    my $checks = 0;
     if ($self->equal) {
         $valid = $self->_check_if_fields_are_equal;
+        $checks++;
+    }
+    if ($valid && !$checks) {
+        # unclear if we should die here or just warn. But the user
+        # could very well not check the warnings.
+        $self->warnings("No check were done");
     }
     return $valid;
 }
