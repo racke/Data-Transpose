@@ -259,6 +259,48 @@ you pass the C<absolute> key set to a true value.
               }
          );
   
+=head3 Groups
+
+You can set the groups either calling C<group> (see below) or with
+C<prepare>, using the validator C<Group> with C<fields>.
+
+Using an arrayref:
+
+  $dtv->prepare([
+                 {
+                   name => 'password',
+                   required => 1,
+                  },
+                  {
+                   name => 'confirm_password',
+                   required => 1,
+                  },
+                  {
+                   name => 'passwords',
+                   validator => 'Group',
+                   fields => [
+                              qw/password confirm_password/,
+                             ],
+                   equal => 1,
+                  },
+                 ]
+                 );
+
+Or using an hash
+
+  $dtv->prepare(password => { required => 1 },
+                confirm_password => { required => 1 },
+                passwords_matching => {
+                                       validator => 'Group',
+                                       fields => [ "password", "confirm_password" ]
+                                      });
+
+By default, if a group is set, it will be checked if all the fields
+match. So using the above schema, you'll get:
+
+  ok $dtv->transpose({ password => "a", confirm_password => "a" });
+  ok !$dtv->transpose({ password => "a", confirm_password => "b" });
+
 
 =head3 Bundled classes
 
@@ -311,12 +353,23 @@ See L<Data::Transpose::Validator::URL> (no special options).
 
 sub prepare {
     my $self = shift;
+    # groups should be processed at the end, because, expecially if an
+    # hash is passed, they could be processed before the fields are
+    # created.
+    my @groups;
     if (@_ == 1) {
         # we have an array;
         my $arrayref = shift;
         die qq{Wrong usage! If you pass a single argument, must be a arrayref\n"}
           unless (ref($arrayref) eq 'ARRAY');
         foreach my $field (@$arrayref) {
+            # defer the group building
+            if (exists $field->{validator} and $field->{validator}) {
+                if ($field->{validator} eq 'Group') {
+                    push @groups, $field;
+                    next;
+                }
+            }
             my $fieldname = $field->{name};
             die qq{Wrong usage! When an array is passed, "name" must be set!}
               unless $fieldname;
@@ -326,7 +379,44 @@ sub prepare {
     else {
         my %fields = @_;
         while (my ($k, $v) = each %fields) {
-            $self->field($k, $v)
+            if (ref($v)
+                and ref($v) eq 'HASH'
+                and exists $v->{validator}
+                and $v->{validator} eq 'Group') {
+                my $grp =  { %$v };
+                $grp->{name} = $k;
+                push @groups, $grp;
+                next;
+            }
+            $self->field($k, $v);
+        }
+    }
+    # fields are fine, build the groups
+    # in the configuration we can't have objects
+    foreach my $g (@groups) {
+        die "Missing group name" unless $g->{name};
+        die "Missing fields for $g->{name} group!" unless $g->{fields};
+        my @gfields;
+        foreach my $f (@{ $g->{fields} }) {
+            my $obj = $self->field($f);
+            die "Couldn't retrieve field object for group $g->{name}, field $f"
+              unless $obj;
+            push @gfields, $obj;
+        }
+        die "No fields found for group $g->{name}" unless @gfields;
+        # build the group
+        my $group_obj = $self->group($g->{name}, @gfields);
+        # and now loops over the other keys and try to call the methods.
+        # say ->equal(0)
+        my %skip = (
+                    name => 1,
+                    fields => 1,
+                    validator => 1,
+                   );
+        foreach my $method (keys %$g) {
+            next if $skip{$method};
+            # e.g $group_obj->equal(1)
+            $group_obj->$method($g->{$method});
         }
     }
 }
@@ -410,6 +500,8 @@ If they pass the test, the group operation are checked.
 
 Group by itself returns a L<Data::Transpose::Validator::Group> object,
 so you can call methods on them to set the rules.
+
+E.g. $self->group("passwords")->equal(1) # not needed it's the default
 
 =head2 groups
 
@@ -746,6 +838,7 @@ sub _build_object {
         my ($class, $classoptions);
         if ($type eq '') {
             my $module = $validator || "Base";
+            die "No group is allowed here" if $module eq 'Group';
             $class = __PACKAGE__ . '::' . $module;
             # no option can be passed
             $classoptions = {};
@@ -754,6 +847,7 @@ sub _build_object {
             $class = $validator->{class};
             die "Missing class for $name!" unless $class;
             unless ($validator->{absolute}) {
+                die "No group is allowed here" if $class eq 'Group';
                 $class = __PACKAGE__ . '::' . $class;
             }
             $classoptions = $validator->{options} || {};
