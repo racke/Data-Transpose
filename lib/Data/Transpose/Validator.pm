@@ -171,6 +171,9 @@ if you provide duplicates, so please just don't do it (but feel free
 to add the fields at different time I<as long you don't overwrite
 them>.
 
+To prevent bad configuration, as of version 0.0005 overwriting an
+existing field raises an exception.
+
   $dtv->prepare([
                   { name => "country" ,
                     required => 1,
@@ -360,14 +363,22 @@ DEATH
     $self->{fields} = {} unless exists $self->{fields};
     
     if ($field and $args) {
-        unless ($field and (ref($field) eq '')) {
-            die "Wrong usage, argument to field is mandatory\n" 
+        unless (ref($field) eq '') {
+            die "Wrong usage, $field must be a string with the field name!\n" 
         };
 
         #  validate the args and store them
         if ($args and (ref($args) eq 'HASH')) {
             my $obj = $self->_build_object($field, $args);
+            # prevent to mix up rules.
+            if ($self->{fields}->{$field}) {
+                die "$field has already a validation rule!\n";
+            }
             $self->{fields}->{$field} = $obj;
+        }
+        else {
+            # raise exception to prevent bad configurations
+            die "Argument for $field must be an hashref, got $args!\n";
         }
         # add the field to the list
         $self->_sorted_fields($field);
