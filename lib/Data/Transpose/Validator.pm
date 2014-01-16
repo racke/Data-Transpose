@@ -428,6 +428,22 @@ to be used only internally, but you can add individual fields with it
 
   $dtv->field(email => { required => 1 });
 
+If the second argument is a string, it is assumed as the validator name. E.g.
+
+  $dtv->field(email => 'EmailValid');
+
+This by itself use the EmailValid with the default settings. If you
+want fine control you need to pass an hashref. Also note that unless
+you specified C<requireall> as true in the constructor, you need to
+set the require.
+
+So these syntaxes do the same:
+
+    $dtv->field(email => { required => 1,
+                           validator => 'EmailValid',
+                         });
+    $dtv->field(email => 'EmailValid')->required(1);
+
 With 1 argument retrieves the object responsible for the validation of
 that field, so you can call methods on them:
 
@@ -450,15 +466,19 @@ DEATH
         die $deprecation unless $field;
     }
 
-    $self->{fields} = {} unless exists $self->{fields};
+    $self->{fields} ||= {};
     
-    if ($field and $args) {
+    if ($args) {
         unless (ref($field) eq '') {
             die "Wrong usage, $field must be a string with the field name!\n" 
         };
 
+        # if a string is passed, consider it as a validator
+        unless (ref($args)) {
+            $args = { validator => $args };
+        }
         #  validate the args and store them
-        if ($args and (ref($args) eq 'HASH')) {
+        if (ref($args) eq 'HASH') {
             my $obj = $self->_build_object($field, $args);
             # prevent to mix up rules.
             if ($self->{fields}->{$field}) {
