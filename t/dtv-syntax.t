@@ -34,7 +34,7 @@ is_deeply($dtv->errors, [
                           'errors' => [
                                        [
                                         'not_equal',
-                                        'Values in group differ!'
+                                        'Passwords differ!'
                                        ]
                                       ],
                           'field' => 'passwords'

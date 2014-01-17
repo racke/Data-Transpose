@@ -49,7 +49,13 @@ sub fields {
 
 =head2 name
 
-Return the name set in the constructor. This is read only.
+Return the name set in the constructor. This is read only. If you want
+a sensible default error string, you should set this to something that
+concatenated with "%s differ" makes sense.
+
+E.g. "passwords" will produce such an error: "Passwords differ!";
+
+
 
 =cut
 
@@ -118,7 +124,8 @@ sub _check_if_fields_are_equal {
         }
     }
     unless ($equal) {
-        $self->error([ not_equal => "Values in group differ!" ]);
+        my $name = ucfirst($self->name);
+        $self->error([ not_equal => "$name differ!" ]);
     }
     return $equal;
 }
