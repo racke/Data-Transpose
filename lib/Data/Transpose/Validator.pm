@@ -479,6 +479,7 @@ DEATH
         }
         #  validate the args and store them
         if (ref($args) eq 'HASH') {
+            $self->_field_args_are_valid($field => keys %$args);
             my $obj = $self->_build_object($field, $args);
             # prevent to mix up rules.
             if ($self->{fields}->{$field}) {
@@ -908,6 +909,22 @@ sub _strip_white {
     $string =~ s/\s+$//;
     return $string;
 }
+
+sub _field_args_are_valid {
+    my ($self, $field, @keys) = @_;
+    my %valid = (
+                 validator => 1,
+                 name => 1,
+                 required => 1,
+                 options => 1,
+                );
+    foreach my $k (@keys) {
+        unless ($valid{$k}) {
+            die "$field has unrecognized option $k!\n";
+        }
+    }
+}
+
 
 =head2 reset_self
 
