@@ -268,7 +268,9 @@ nothing suspicious was found.
 
 =head2 password_length_ok
 
-Check if the password is in the range of permitted lengths.
+Check if the password is in the range of permitted lengths. Return
+undef if the validation passes, otherwise the arrayref with the error
+code and the error string.
 
 =cut
 
@@ -279,7 +281,15 @@ sub password_length_ok {
 	($self->password_length <= $self->maxlength)) {
 	return undef;
     } else {
-	return ["length" => "Wrong length"];
+        my $min = $self->minlength || 0;
+        my $max = $self->maxlength || 0;
+        my $cur = $self->password_length || 0;
+        if ($cur < $min) {
+            return ["length" => "Wrong length (it should be long at least $min characters)"];
+        }
+        else {
+            return ["length" => "Password too long (max allowed $max)"];
+        }
     }
 }
 
@@ -798,3 +808,7 @@ at your option, any later version of Perl 5 you may have available.
 
 
 =cut
+
+# Local Variables:
+# tab-width: 8
+# End:
