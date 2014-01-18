@@ -21,6 +21,12 @@ WriteMakefile(
         'Scalar::Util' => 0,
         'Business::CreditCard' => 0.32,
     },
+    META_MERGE        => {
+        resources => {
+            repository  => 'https://github.com/racke/Data-Transpose',
+            bugtracker  => 'https://github.com/racke/Data-Transpose/issues',
+        },
+    },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Data-Transpose-*' },
 );
