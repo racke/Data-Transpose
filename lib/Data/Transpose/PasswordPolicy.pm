@@ -800,7 +800,7 @@ Marco Pessotto, E<lt>melmothx@gmail.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2013 by Marco Pessotto
+Copyright (C) 2013-2014 by Marco Pessotto
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.16.2 or,
