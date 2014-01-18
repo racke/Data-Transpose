@@ -34,6 +34,68 @@ sub new {
     bless $self, $class;
 }
 
+=head2 required
+
+Set or retrieve the required option. Returns true if required, false
+otherwise.
+
+=cut
+
+sub required {
+    my $self = shift;
+    if (@_) {
+        $self->{_dtv_required} = shift;
+    }
+    return $self->{_dtv_required};
+}
+
+=head2 dtv_options
+
+Set or retrieve the Data::Transpose::Validator options. Given that the
+various classes have a different way to initialize the objects, this
+should be done only once the object has been built.
+
+E.g.
+
+   my $obj = $class->new(%classoptions);
+   $obj->dtv_options(\%dtv_options);
+
+=cut
+
+sub dtv_options {
+    my $self = shift;
+    if (@_) {
+        $self->{_dtv_options} = shift;
+    }
+    return $self->{_dtv_options};
+}
+
+=head2 dtv_value
+
+On transposing, the value of the field is stored here.
+
+=cut
+
+sub dtv_value {
+    my $self = shift;
+    if (@_) {
+        $self->{_dtv_value} = shift;
+    }
+    defined $self->{_dtv_value} ? return $self->{_dtv_value} : return "";
+}
+
+=head2 reset_dtv_value
+
+Delete the dtv_value from the object
+
+=cut
+
+sub reset_dtv_value {
+    my $self = shift;
+    delete $self->{_dtv_value};
+}
+
+
 =head2 is_valid($what)
 
 Main method. Return true if the variable passed is defined, false if
@@ -123,7 +185,29 @@ sub error_codes {
     return @out;
 }
 
+=head2 warnings
 
+Set or retrieve a list of warnings issued by the validator.
+
+=head2 reset_warnings
+
+Reset the warning list.
+
+=cut
+
+sub warnings {
+    my ($self, @warn) = @_;
+    $self->{warnings} ||= [];
+    if (@warn) {
+        push @{$self->{warnings}}, @warn;
+    }
+    return @{ $self->{warnings} };
+}
+
+sub reset_warnings {
+    my $self = shift;
+    delete $self->{warnings};
+}
 
 
 1;

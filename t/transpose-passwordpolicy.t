@@ -218,7 +218,7 @@ print Dumper(\@errors);
 my @expected = (
                 [
                  'length',
-                 'Wrong length'
+                 'Wrong length (it should be long at least 12 characters)'
                 ],
                 [
                  'specials',

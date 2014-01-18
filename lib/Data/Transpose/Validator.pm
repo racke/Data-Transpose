@@ -6,6 +6,7 @@ use Module::Load;
 use Try::Tiny;
 # use Data::Dumper;
 use Data::Transpose::Validator::Subrefs;
+use Data::Transpose::Validator::Group;
 
 =head1 NAME
 
@@ -133,14 +134,10 @@ first defined value.
 sub option_for_field {
     my ($self, $option, $field) = @_;
     return unless ($field && $option);
-    my $hash = $self->field($field);
-    return unless ($hash and (ref($hash) eq 'HASH'));
+    my $hash = $self->field($field)->dtv_options;
     # print Dumper($hash);
-    if (exists $hash->{options}) {
-        if (exists $hash->{options}->{$option}) {
-            # higher priority option exists, so return that
-            return $hash->{options}->{$option};
-        }
+    if ($hash and (ref($hash) eq 'HASH') and exists $hash->{$option}) {
+        return $hash->{$option};
     }
     return $self->option($option) # return the global one;
 }
@@ -173,6 +170,9 @@ Fields are added or replaced, but you could end up with messy errors
 if you provide duplicates, so please just don't do it (but feel free
 to add the fields at different time I<as long you don't overwrite
 them>.
+
+To prevent bad configuration, as of version 0.0005 overwriting an
+existing field raises an exception.
 
   $dtv->prepare([
                   { name => "country" ,
@@ -259,6 +259,48 @@ you pass the C<absolute> key set to a true value.
               }
          );
   
+=head3 Groups
+
+You can set the groups either calling C<group> (see below) or with
+C<prepare>, using the validator C<Group> with C<fields>.
+
+Using an arrayref:
+
+  $dtv->prepare([
+                 {
+                   name => 'password',
+                   required => 1,
+                  },
+                  {
+                   name => 'confirm_password',
+                   required => 1,
+                  },
+                  {
+                   name => 'passwords',
+                   validator => 'Group',
+                   fields => [
+                              qw/password confirm_password/,
+                             ],
+                   equal => 1,
+                  },
+                 ]
+                 );
+
+Or using an hash
+
+  $dtv->prepare(password => { required => 1 },
+                confirm_password => { required => 1 },
+                passwords_matching => {
+                                       validator => 'Group',
+                                       fields => [ "password", "confirm_password" ]
+                                      });
+
+By default, if a group is set, it will be checked if all the fields
+match. So using the above schema, you'll get:
+
+  ok $dtv->transpose({ password => "a", confirm_password => "a" });
+  ok !$dtv->transpose({ password => "a", confirm_password => "b" });
+
 
 =head3 Bundled classes
 
@@ -309,12 +351,23 @@ See L<Data::Transpose::Validator::URL> (no special options).
 
 sub prepare {
     my $self = shift;
+    # groups should be processed at the end, because, expecially if an
+    # hash is passed, they could be processed before the fields are
+    # created.
+    my @groups;
     if (@_ == 1) {
         # we have an array;
         my $arrayref = shift;
         die qq{Wrong usage! If you pass a single argument, must be a arrayref\n"}
           unless (ref($arrayref) eq 'ARRAY');
         foreach my $field (@$arrayref) {
+            # defer the group building
+            if (exists $field->{validator} and $field->{validator}) {
+                if ($field->{validator} eq 'Group') {
+                    push @groups, $field;
+                    next;
+                }
+            }
             my $fieldname = $field->{name};
             die qq{Wrong usage! When an array is passed, "name" must be set!}
               unless $fieldname;
@@ -324,7 +377,44 @@ sub prepare {
     else {
         my %fields = @_;
         while (my ($k, $v) = each %fields) {
-            $self->field($k, $v)
+            if (ref($v)
+                and ref($v) eq 'HASH'
+                and exists $v->{validator}
+                and $v->{validator} eq 'Group') {
+                my $grp =  { %$v };
+                $grp->{name} = $k;
+                push @groups, $grp;
+                next;
+            }
+            $self->field($k, $v);
+        }
+    }
+    # fields are fine, build the groups
+    # in the configuration we can't have objects
+    foreach my $g (@groups) {
+        die "Missing group name" unless $g->{name};
+        die "Missing fields for $g->{name} group!" unless $g->{fields};
+        my @gfields;
+        foreach my $f (@{ $g->{fields} }) {
+            my $obj = $self->field($f);
+            die "Couldn't retrieve field object for group $g->{name}, field $f"
+              unless $obj;
+            push @gfields, $obj;
+        }
+        die "No fields found for group $g->{name}" unless @gfields;
+        # build the group
+        my $group_obj = $self->group($g->{name}, @gfields);
+        # and now loops over the other keys and try to call the methods.
+        # say ->equal(0)
+        my %skip = (
+                    name => 1,
+                    fields => 1,
+                    validator => 1,
+                   );
+        foreach my $method (keys %$g) {
+            next if $skip{$method};
+            # e.g $group_obj->equal(1)
+            $group_obj->$method($g->{$method});
         }
     }
 }
@@ -336,44 +426,74 @@ to be used only internally, but you can add individual fields with it
 
   $dtv->field(email => { required => 1 });
 
-  print(Dumper($dtv->field("email"));
+If the second argument is a string, it is assumed as the validator name. E.g.
 
-  print(Dumper($dtv->field);
+  $dtv->field(email => 'EmailValid');
 
-With no arguments, it retrieves the hashref with all the fields, while
-with 1 argument retrieves the hashref of that specific field.
+This by itself use the EmailValid with the default settings. If you
+want fine control you need to pass an hashref. Also note that unless
+you specified C<requireall> as true in the constructor, you need to
+set the require.
+
+So these syntaxes do the same:
+
+    $dtv->field(email => { required => 1,
+                           validator => 'EmailValid',
+                         });
+    $dtv->field(email => 'EmailValid')->required(1);
+
+With 1 argument retrieves the object responsible for the validation of
+that field, so you can call methods on them:
+
+  $dtv->field(email => { required => 0 })->required(1);
+  $dtv->field('email')->required # return true
+
+WARNING: Earlier versions of this method without any argument would
+have retrieved the whole structure. Now it dies instead.
 
 =cut
 
 sub field {
     my ($self, $field, $args) = @_;
     # initialize
-    $self->{fields} = {} unless exists $self->{fields};
+    unless ($field) {
+        my $deprecation =<<'DEATH';
+As of version 0.0005, the retrieval of the whole structure without
+field argument is deprecated, as fields return an object instead!
+DEATH
+        die $deprecation unless $field;
+    }
+
+    $self->{fields} ||= {};
     
-    if ($field and $args) {
-        unless ($field and (ref($field) eq '')) {
-            die "Wrong usage, argument to field is mandatory\n" 
+    if ($args) {
+        unless (ref($field) eq '') {
+            die "Wrong usage, $field must be a string with the field name!\n" 
         };
 
+        # if a string is passed, consider it as a validator
+        unless (ref($args)) {
+            $args = { validator => $args };
+        }
         #  validate the args and store them
-        if ($args and (ref($args) eq 'HASH')) {
-            $self->{fields}->{$field} = $args;
+        if (ref($args) eq 'HASH') {
+            $self->_field_args_are_valid($field => keys %$args);
+            my $obj = $self->_build_object($field, $args);
+            # prevent to mix up rules.
+            if ($self->{fields}->{$field}) {
+                die "$field has already a validation rule!\n";
+            }
+            $self->{fields}->{$field} = $obj;
+        }
+        else {
+            # raise exception to prevent bad configurations
+            die "Argument for $field must be an hashref, got $args!\n";
         }
         # add the field to the list
         $self->_sorted_fields($field);
     }
-
-    # behave as an accessor
-    if ($field) {
-        return $self->{fields}->{$field}
-    }
-    # retrieve all
-    else {
-        return $self->{fields};
-    }
+    return $self->{fields}->{$field}
 }
-
-# return the sorted list of fields
 
 sub _sorted_fields {
     my ($self, $field) = @_;
@@ -384,6 +504,66 @@ sub _sorted_fields {
     return @{$self->{ordering}};
 }
 
+# return the sorted list of fields
+
+=head2 group (name => $field1, $field2, $field3, ...)
+
+Create a named group of fields and schedule them for validation.
+
+The logic is:
+
+First, the individual fields are normally checked according to the
+rules provided with C<prepare> or C<field>.
+
+If they pass the test, the group operation are checked.
+
+Group by itself returns a L<Data::Transpose::Validator::Group> object,
+so you can call methods on them to set the rules.
+
+E.g. $self->group("passwords")->equal(1) # not needed it's the default
+
+=head2 groups
+
+Retrieve the list of the group objects scheduled for validation
+
+=cut
+
+sub group {
+    my ($self, $name, @objects) = @_;
+    # check
+    $self->{groups} ||= [];
+    die "Wrong usage, first argument must be a string!" unless $name && !ref($name);
+    if (@objects) {
+        my @group;
+        foreach my $field (@objects) {
+            my $obj = $field;
+            unless (ref($field)) {
+                $obj = $self->field($field);
+            }
+            # if we couldn't retrieve the field, die, we can't build the group
+            die "$obj could not be retrieved! Too early for this?" unless $obj;
+            push @group, $obj;
+        }
+        my $group = Data::Transpose::Validator::Group->new(name => $name,
+                                                           fields => \@group);
+
+        push @{ $self->{groups} }, $group;
+        # store it in the dtv object and return it
+        return $group;
+    }
+    # retrieve
+    foreach my $g (@{ $self->{groups} }) {
+        if ($g->name eq $name) {
+            return $g;
+        }
+    }
+    return;
+}
+
+sub groups {
+    my $self = shift;
+    $self->{groups} ? return @{ $self->{groups} } : return;
+}
 
 =head2 transpose
 
@@ -409,6 +589,8 @@ sub transpose {
 
     # we loop over the schema
     foreach my $field ($self->_sorted_fields) {
+        my $obj = $self->field($field);
+        $obj->reset_dtv_value;
         my $value;
         # the incoming hash could not have such a field
         if (exists $status{$field}) {
@@ -456,12 +638,24 @@ sub transpose {
             next;
         } 
         # we have something, validate it
-        my $obj = $self->_build_object($field);
         unless ($obj->is_valid($value)) {
             my @errors = $obj->error;
             $self->errors($field, \@errors)
         }
+        $obj->dtv_value($value);
     }
+
+
+    # if there is no error, check the groups
+    unless ($self->errors) {
+        foreach my $group ($self->groups) {
+            unless ($group->is_valid) {
+                my @errors = $group->error;
+                $self->errors($group->name, \@errors);
+            }
+        }
+    }
+
     # now the filtering loop has ended. See if we have still things in the hash.
     if (keys %status) {
         my $unknown = $self->option('unknown');
@@ -646,19 +840,15 @@ sub field_is_required {
     my ($self, $field) = @_;
     return unless defined $field;
     return 1 if $self->option("requireall");
-    return $self->field($field)->{required};
+    return $self->field($field)->required;
 }
 
 sub _build_object {
-    my $self = shift;
-    my $field = shift;
-    $self->{objects} = {} unless exists $self->{objects};
-
-    my $params = $self->field($field); # retrieve the conf
-
+    my ($self, $name, $params) = @_;
     my $validator = $params->{validator};
     my $type = ref($validator);
     my $obj;
+    # print "Building $name... " . Dumper($params);
     # if we got a string, the class is Data::Transpose::$string
     if ($type eq 'CODE') {
         $obj = Data::Transpose::Validator::Subrefs->new($validator);
@@ -667,21 +857,23 @@ sub _build_object {
         my ($class, $classoptions);
         if ($type eq '') {
             my $module = $validator || "Base";
+            die "No group is allowed here" if $module eq 'Group';
             $class = __PACKAGE__ . '::' . $module;
             # no option can be passed
             $classoptions = {};
         }
         elsif ($type eq 'HASH') {
             $class = $validator->{class};
-            die "Missing class for $field\n" unless $class;
+            die "Missing class for $name!" unless $class;
             unless ($validator->{absolute}) {
+                die "No group is allowed here" if $class eq 'Group';
                 $class = __PACKAGE__ . '::' . $class;
             }
             $classoptions = $validator->{options} || {};
             # print Dumper($classoptions);
         }
         else {
-            die "Wron usage. Pass a string, an hashref or a sub!\n";
+            die "Wrong usage. Pass a string, an hashref or a sub!\n";
         }
         # lazy loading, avoiding to load the same class twice
         try {
@@ -691,7 +883,12 @@ sub _build_object {
             $obj = $class->new(%$classoptions);
         };
     }
-    $self->{objects}->{$field} = $obj; # hold it
+    if ($params->{options}) {
+        $obj->dtv_options($params->{options});
+    }
+    if ($self->option('requireall') || $params->{required}) {
+        $obj->required(1);
+    }
     return $obj;
 }
 
@@ -710,6 +907,22 @@ sub _strip_white {
     $string =~ s/\s+$//;
     return $string;
 }
+
+sub _field_args_are_valid {
+    my ($self, $field, @keys) = @_;
+    my %valid = (
+                 validator => 1,
+                 name => 1,
+                 required => 1,
+                 options => 1,
+                );
+    foreach my $k (@keys) {
+        unless ($valid{$k}) {
+            die "$field has unrecognized option $k!\n";
+        }
+    }
+}
+
 
 =head2 reset_self
 

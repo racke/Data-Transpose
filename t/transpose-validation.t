@@ -5,7 +5,7 @@ use warnings;
 use Data::Transpose::Validator;
 use Data::Dumper;
 
-use Test::More tests => 19;
+use Test::More tests => 20;
 
 my $dtv = Data::Transpose::Validator->new();
 
@@ -113,14 +113,27 @@ ok($dtv->field_is_required("email"), "Now it is ");
 $dtv->option(requireall => 0);
 ok(!$dtv->field_is_required("email"), "Now it's not");
 $schema->[0]->{required} = 1;
+
+eval {
+    $dtv->prepare($schema);
+};
+
+ok($@, "Overwriting the schema raises an exception");
+
+$dtv = Data::Transpose::Validator->new(stripwhite => 1);
 $dtv->prepare($schema);
 ok($dtv->field_is_required("email"), "Now it is ");
 
-$dtv->field(email => { required => 1 });
-is_deeply ($dtv->field("email"), { required => 1 },
-           "Field email set with field");
 
-is(ref($dtv->field), "HASH", "All the fields retrieved with ->field");
+$dtv = Data::Transpose::Validator->new();
+$dtv->field(email => { required => 1 });
+ok ($dtv->field("email")->required, "Field email set with field");
+
+eval {
+    $dtv->field;
+};
+ok ($@, "DTV died on field without arguments");
+
 
 # reset all
 
