@@ -303,8 +303,6 @@ See L<Data::Transpose::Validator::String> (no special options).
 
 See L<Data::Transpose::Validator::URL> (no special options).
 
-=item 
-
 =back
 
 =cut
