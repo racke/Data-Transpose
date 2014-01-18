@@ -2,7 +2,7 @@ NAME
     Data::Transpose - Transpose, filter and validate data
 
 VERSION
-    Version 0.0004
+    Version 0.0005
 
 SYNOPSIS
         use Data::Transpose;
@@ -43,11 +43,10 @@ AUTHOR
     Stefan Hornburg (Racke), `<racke at linuxia.de>'
 
 BUGS
-    Please report any bugs or feature requests to `bug-data-transpose at
-    rt.cpan.org', or through the web interface at
-    http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Data-Transpose. I will be
-    notified, and then you'll automatically be notified of progress on your
-    bug as I make changes.
+    Please report any bugs or feature requests at
+    https://github.com/racke/Data-Transpose/issues. I will be notified, and
+    then you'll automatically be notified of progress on your bug as I make
+    changes.
 
 SUPPORT
     You can find documentation for this module with the perldoc command.
@@ -56,8 +55,8 @@ SUPPORT
 
     You can also look for information at:
 
-    * RT: CPAN's request tracker (report bugs here)
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Data-Transpose
+    * Github's issue tracker (report bugs here)
+        https://github.com/racke/Data-Transpose/issues
 
     * AnnoCPAN: Annotated CPAN documentation
         http://annocpan.org/dist/Data-Transpose
@@ -70,7 +69,7 @@ SUPPORT
 
 ACKNOWLEDGEMENTS
 LICENSE AND COPYRIGHT
-    Copyright 2012-2013 Stefan Hornburg (Racke).
+    Copyright 2012-2014 Stefan Hornburg (Racke).
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of either: the GNU General Public License as published

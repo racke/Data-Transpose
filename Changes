@@ -1,5 +1,17 @@
 Revision history for Data::Transpose
 
+0.0005 Sat Jan 18 13:41:32 2014 CET
+
+    * Add group validation.
+
+    * Add success method to Data::Transpose::Validator.
+
+    * Fix spurious =item in Data::Transpose::Validator's POD.
+
+    * Run POD tests only when RELEASE_TESTING is set.
+
+    * Add resource and bugtracker to Makefile.PL.
+
 0.0004 Thu Feb 21 13:46:56 2013 CET
 
     * Added Data::Transpose::Validator, a module to validate incoming
