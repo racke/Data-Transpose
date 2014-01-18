@@ -176,8 +176,9 @@ Stefan Hornburg (Racke), C<< <racke at linuxia.de> >>
 
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-data-transpose at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Data-Transpose>.  I will be notified, and then you'll
+Please report any bugs or feature requests at
+L<https://github.com/racke/Data-Transpose/issues>.
+I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
 =head1 SUPPORT
@@ -190,9 +191,9 @@ You can also look for information at:
 
 =over 4
 
-=item * RT: CPAN's request tracker (report bugs here)
+=item * Github's issue tracker (report bugs here)
 
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Data-Transpose>
+L<https://github.com/racke/Data-Transpose/issues>
 
 =item * AnnoCPAN: Annotated CPAN documentation
 
