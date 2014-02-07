@@ -1,13 +1,24 @@
 NAME
-    Data::Transpose - Transpose, filter and validate data
+    Data::Transpose - Transpose, iterate, filter and validate data
+
+    Caters to your needs for manipulating data by different operations,
+    which are filtering records, iterating records, validating and
+    transposing to different field names.
 
 VERSION
-    Version 0.0005
+    Version 0.0006
 
 SYNOPSIS
         use Data::Transpose;
 
         my $tp = Data::Transpose->new;
+
+REFERENCE
+    Validator
+        Data::Transpose::Validator
+
+    Iterator
+        Data::Transpose::Iterator
 
 METHODS
   new
