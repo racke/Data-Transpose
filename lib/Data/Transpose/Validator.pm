@@ -7,6 +7,7 @@ use Try::Tiny;
 # use Data::Dumper;
 use Data::Transpose::Validator::Subrefs;
 use Data::Transpose::Validator::Group;
+use Data::Transpose::Iterator::Errors;
 
 =head1 NAME
 
@@ -98,6 +99,7 @@ sub new {
 
     $self->{options} = \%defaults;
     $self->{success} = undef;
+    $self->{errors_iterator} = Data::Transpose::Iterator::Errors->new;
 
     bless $self, $class;
 }
@@ -725,18 +727,46 @@ for a more accessible way for the errors.
 sub errors {
     my ($self, $field, $error) = @_;
     if ($error and $field) {
-        $self->{errors} = [] unless $self->{errors};
-        push @{$self->{errors}}, {field => $field,
-                                  errors => $error};
+        $self->{errors_iterator}->append({field => $field,
+                                         errors => $error});
     }
-    return $self->{errors};
+
+    if ($self->{errors_iterator}->count) {
+        return $self->{errors_iterator}->records;
+    }
+
+    return;
+}
+
+=head2 errors_iterator
+
+Returns error iterator.
+
+=cut
+
+sub errors_iterator {
+    my ( $self ) = @_;
+
+    return $self->{errors_iterator};
+}
+
+=head2 errors_hash
+
+Returns hash of errors.
+
+=cut
+
+sub errors_hash {
+    my ( $self ) = @_;
+
+    return $self->{errors_iterator}->errors_hash;
 }
 
 sub _reset_errors {
     my $self = shift;
-    delete $self->{errors} if exists $self->{errors};
-}
 
+    $self->{errors_iterator}->records([]);
+}
 
 =head2 faulty_fields 
 
@@ -747,9 +777,13 @@ Accessor to the list of fields where the validator detected errors.
 sub faulty_fields {
     my $self = shift;
     my @ffs;
-    foreach my $err (@{$self->errors}) {
+
+    while (my $err = $self->{errors_iterator}->next) {
         push @ffs, $err->{field};
     }
+
+    $self->{errors_iterator}->reset;
+
     return @ffs;
 }
 
@@ -781,7 +815,7 @@ sub errors_as_hashref {
 
 =head2 packed_errors($fieldsep, $separator)
 
-As convenience, this metod will join the human readable strings using
+As convenience, this method will join the human readable strings using
 the second argument, and introduced by the name of the field
 concatenated to the first argument. Example with the defaults (colon
 and comma):
@@ -817,13 +851,17 @@ sub _get_errors_field {
     my $self = shift;
     my $i = shift;
     my %errors;
-    foreach my $err (@{$self->errors}) {
+
+    while (my $err = $self->errors_iterator->next) {
         my $f = $err->{field};
         $errors{$f} = [] unless exists $errors{$f};
         foreach my $string (@{$err->{errors}}) {
             push @{$errors{$f}}, $string->[$i];
         }
     }
+
+    $self->errors_iterator->reset;
+
     return \%errors;
 }
 

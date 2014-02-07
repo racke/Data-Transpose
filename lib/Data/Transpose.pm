@@ -9,7 +9,11 @@ use Data::Transpose::Group;
 
 =head1 NAME
 
-Data::Transpose - Transpose, filter and validate data
+Data::Transpose - Transpose, iterate, filter and validate data
+
+Caters to your needs for manipulating data by different operations,
+which are filtering records, iterating records, validating and
+transposing to different field names.
 
 =head1 VERSION
 
@@ -24,6 +28,20 @@ our $VERSION = '0.0005';
     use Data::Transpose;
 
     my $tp = Data::Transpose->new;
+
+=head1 REFERENCE
+
+=over 4
+
+=item Validator
+
+L<Data::Transpose::Validator>
+
+=item Iterator
+
+L<Data::Transpose::Iterator>
+
+=back
 
 =head1 METHODS
 
