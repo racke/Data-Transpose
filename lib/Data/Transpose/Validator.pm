@@ -313,7 +313,7 @@ options are passed to the C<new> constructor of the validator's class.
 
 =item CreditCard
 
-See L<Data::Transpose::CreditCard>
+See L<Data::Transpose::Validator::CreditCard>
 
 Options: C<types> and C<country>
 
