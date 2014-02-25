@@ -247,7 +247,7 @@ you pass the C<absolute> key set to a true value.
               },
 
           # something more elaborate
-          passowrd => {
+          password => {
                  validator => {
                        class => PasswordPolicy,
                        options => {
