@@ -1,5 +1,19 @@
 Revision history for Data::Transpose
 
+0.0007 Tue Feb 25 19:16:45 2014 CET
+
+    * Allow to pass validator options inside field arguments for named
+      validators.
+
+    * Fix typo in Data::Transpose::Validator's documentation for prepare
+      method.
+
+    * Fix typos in NumericRange iterator.
+
+    * Fix link to credit card validator in the documentation.
+
+    * Add Moo to prequisites.
+
 0.0006 Fri Feb  7 17:33:56 2014 CET
 
     * Add base and errors iterators.
