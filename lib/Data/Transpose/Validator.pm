@@ -450,6 +450,16 @@ that field, so you can call methods on them:
   $dtv->field(email => { required => 0 })->required(1);
   $dtv->field('email')->required # return true
 
+You can also pass options for the validator, e.g.:
+
+ $dtv->field('month' => { validator => 'NumericRange',
+                          options => {
+                              min => 1,
+                              max => 12,
+                              integer => 1
+                          },
+                         });
+
 WARNING: Earlier versions of this method without any argument would
 have retrieved the whole structure. Now it dies instead.
 
@@ -897,8 +907,8 @@ sub _build_object {
             my $module = $validator || "Base";
             die "No group is allowed here" if $module eq 'Group';
             $class = __PACKAGE__ . '::' . $module;
-            # no option can be passed
-            $classoptions = {};
+            # use options from params
+            $classoptions = $params->{options} || {};
         }
         elsif ($type eq 'HASH') {
             $class = $validator->{class};
