@@ -13,7 +13,7 @@ Data::Transpose::Validator::NumericRange - Validate numbers in a range
 
 =head2 new(min => $min, max => $max, integer => $bool)
 
-Constructor, setting the minimum, the maximum and the C<interger>
+Constructor, setting the minimum, the maximum and the C<integer>
 option, which will validate only integers.
 
 =cut
@@ -50,7 +50,7 @@ sub is_valid {
     my ($self, $arg) = @_;
     $self->reset_errors;
     $self->error(["undefined", "Not defined"]) unless defined $arg;
-    $self->error(["notanumber", "Not a numer"]) unless looks_like_number($arg);
+    $self->error(["notanumber", "Not a number"]) unless looks_like_number($arg);
     if ($self->wants_integer) {
         $self->error(["notinteger", "Not an integer"]) unless $arg =~ m/^\d+$/;
     }
