@@ -105,7 +105,7 @@ sub new {
 
 =head2 field
 
-Add a new field object and returns it:
+Add a new L<field|Data::Transpose::Field> object and return it:
 
     $tp->field('email');
 
@@ -124,7 +124,7 @@ sub field {
 
 =head2 group
 
-Add a new group object and return it:
+Add a new L<group|Data::Transpose::Group> object and return it:
 
     $tp->group('fullname', $tp->field('firstname'), $tp->field('lastname'));
 
