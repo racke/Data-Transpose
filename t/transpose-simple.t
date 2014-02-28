@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 1;
+use Test::More tests => 2;
 
 use Data::Transpose;
 use Data::Dumper;
@@ -19,4 +19,20 @@ ok(exists $output->{bar} && $output->{bar} == 6,
    'simple transpose test foo => bar')
     || diag "Transpose output: " . Dumper($output);
 
+my $foo = Foo->new(foo => 6);
 
+$output = $tp->transpose_object($foo);
+
+ok(exists $output->{bar} && $output->{bar} == 6,
+   'simple object transpose test foo => bar')
+    || diag "Transpose output: " . Dumper($output);
+
+package Foo;
+
+use Moo;
+
+has foo => (
+    is => 'ro',
+);
+
+1;
