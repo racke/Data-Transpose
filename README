@@ -6,7 +6,7 @@ NAME
     transposing to different field names.
 
 VERSION
-    Version 0.0007
+    Version 0.0008
 
 SYNOPSIS
         use Data::Transpose;
@@ -39,8 +39,10 @@ METHODS
             Unknown fields in the input hash don't appear in the output
             hash.
 
+        This doesn't apply to the transpose_object method.
+
   field
-    Add a new field object and returns it:
+    Add a new field object and return it:
 
         $tp->field('email');
 
@@ -50,6 +52,13 @@ METHODS
         $tp->group('fullname', $tp->field('firstname'), $tp->field('lastname'));
 
   transpose
+    Transposes input:
+
+       $new_record = $tp->transpose($orig_record);
+
+  transpose_object
+    Transposes an object into a hash reference.
+
 AUTHOR
     Stefan Hornburg (Racke), `<racke at linuxia.de>'
 
