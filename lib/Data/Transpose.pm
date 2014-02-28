@@ -17,11 +17,11 @@ transposing to different field names.
 
 =head1 VERSION
 
-Version 0.0007
+Version 0.0008
 
 =cut
 
-our $VERSION = '0.0007';
+our $VERSION = '0.0008';
 
 =head1 SYNOPSIS
 
