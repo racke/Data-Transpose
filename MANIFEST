@@ -5,6 +5,7 @@ lib/Data/Transpose/Field.pm
 lib/Data/Transpose/Group.pm
 lib/Data/Transpose/Iterator/Base.pm
 lib/Data/Transpose/Iterator/Errors.pm
+lib/Data/Transpose/Iterator/Scalar.pm
 lib/Data/Transpose/PasswordPolicy.pm
 lib/Data/Transpose/Validator.pm
 lib/Data/Transpose/Validator/Base.pm
@@ -25,6 +26,7 @@ t/00-load.t
 t/dtv-groups.t
 t/dtv-syntax.t
 t/filter-with-sub.t
+t/iterator-scalar.t
 t/iterator-simple.t
 t/manifest.t
 t/pod-coverage.t
