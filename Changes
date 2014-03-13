@@ -1,5 +1,9 @@
 Revision history for Data::Transpose
 
+0.0009 Thu Mar 13 19:34:00 2014 CET
+
+    * Add iterator Data::Transpose::Iterator::Scalar.
+
 0.0008 Fri Feb 28 16:32:04 2014 CET
 
     * Add transpose_object method to Data::Transpose.
