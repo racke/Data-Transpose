@@ -138,12 +138,6 @@ sub is_valid {
         return;
     }
 
-    # check for bad characters
-    if ($email =~ /'/) {
-        $self->error('bad_chars');
-        return;
-    }
-
     $self->output($email);
     return $email;
 }
