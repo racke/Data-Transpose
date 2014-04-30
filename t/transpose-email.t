@@ -15,11 +15,13 @@ my %valid = (
     '"Stefan Hornburg (Racke)" <racke@linuxia.de>' => 'racke@linuxia.de',
     'fast_typer@gmail.ocm'                         => 'fast_typer@gmail.com',
     ' pit@bull.de '                                => 'pit@bull.de',
+    "o'brian\@gmail.com" => '',
+    'victorochieng\'679@yahoo.com'            => '',
+
 );
 
 my %invalid = (
     'beckyd_sp@yahoo.com/beckydned@gmail.com' => 'rfc822',
-    'victorochieng\'679@yahoo.com'            => 'bad_chars',
     'Nour_e;mahdy@yahoo.com'                  => 'rfc822',
     'jneira@academia.usbbog.edu.co.'          => 'rfc822',
     'Ahmed Mohammed6684@gmail.com'            => 'rfc822',
