@@ -6,7 +6,7 @@ NAME
     transposing to different field names.
 
 VERSION
-    Version 0.0009
+    Version 0.0010
 
 SYNOPSIS
         use Data::Transpose;

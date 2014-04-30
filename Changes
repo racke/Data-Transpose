@@ -1,5 +1,12 @@
 Revision history for Data::Transpose
 
+0.0010 Wed Apr 30 08:58:07 2014 CEST
+
+    [BUG FIXES]
+
+    * Remove the additional check on ' for email addresses, as this is a
+      valid character per RFC 822 (GH #6, Marco Pessotto).
+
 0.0009 Thu Mar 13 19:34:00 2014 CET
 
     * Add iterator Data::Transpose::Iterator::Scalar.
