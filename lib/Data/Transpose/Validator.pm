@@ -52,6 +52,11 @@ The constructor. It accepts a hash as argument, with options:
 
 C<stripwhite>: strip leading and trailing whitespace from strings (default: true)
 
+C<collapse_whitespace>: collapse all the consecutive whitespace
+characters into a single space. This basically will do a C<s/\s+/ /gs>
+against the value, so will remove all newlines and tabs as well.
+Default is false.
+
 C<requireall>: require all the fields of the schema (default: false)
 
 C<unknown>: what to do if other fields, not present in the schema, are passed.
@@ -86,6 +91,7 @@ sub new {
     my $self = {};
     my %defaults = (
                     stripwhite => 1,
+                    collapse_whitespace => 0,
                     requireall => 0,
                     unknown => 'skip',
                     missing => 'pass',
@@ -614,6 +620,9 @@ sub transpose {
             if ($self->option_for_field('stripwhite', $field)) {
                 $value = $self->_strip_white($value);
             }
+            if ($self->option_for_field(collapse_whitespace => $field)) {
+                $value = $self->_collapse_white($value);
+            }
             # then we set it in the ouput, it could be undef;
             $output{$field} = $value;
         }
@@ -955,6 +964,16 @@ sub _strip_white {
     $string =~ s/\s+$//;
     return $string;
 }
+
+sub _collapse_white {
+    my ($self, $string) = @_;
+    return unless defined $string;
+    return $string unless (ref($string) eq '');
+    # convert all 
+    $string =~ s/\s+/ /gs;
+    return $string;
+}
+
 
 sub _field_args_are_valid {
     my ($self, $field, @keys) = @_;
