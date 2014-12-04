@@ -5,7 +5,7 @@ use warnings;
 use Data::Transpose::Validator;
 use Data::Dumper;
 
-use Test::More tests => 22;
+use Test::More tests => 26;
 
 my $dtv = Data::Transpose::Validator->new();
 
@@ -93,7 +93,8 @@ $dtv->prepare($schema);
 is($dtv->option_for_field(stripwhite => "email"), 0,
    "stripwhite for email is false now");
 
-my @objoptions = sort (qw/missing stripwhite requireall unknown/);
+my @objoptions = sort qw/missing stripwhite requireall unknown
+                         collapse_whitespace/;
 my @optionstocheck = $dtv->options;
 is_deeply(\@objoptions, \@optionstocheck, "Checking ->options");
 
@@ -197,6 +198,10 @@ $expectedform = {
 $cleaned = $validator->transpose($form);
 is_deeply($cleaned, $expectedform, "no collapsing by default");
 
+ok(!$validator->option_for_field(collapse_whitespace => 'first'),
+  "Option picked up correctly");
+
+
 %sch = (
         first => { required => 1 },
         second => { required => 1 },
@@ -204,7 +209,7 @@ is_deeply($cleaned, $expectedform, "no collapsing by default");
        );
 
 $form = {
-         first => '  test test    ',
+         first => "  test\t\n  test    ",
          second => ' prova   prova   ',
          third => " hello\n\n hello  ",
         };
@@ -217,5 +222,39 @@ $expectedform = {
                  second => 'prova prova',
                  third => 'hello hello',
                 };
+ok($validator->option_for_field(collapse_whitespace => 'first'),
+  "Option picked up");
+
+ok($validator->option('collapse_whitespace'), "global option ok");
+
+$cleaned = $validator->transpose($form);
+
 is_deeply($cleaned, $expectedform,
-          "whitespace collapsed with collapse_whitespace");
+          "whitespace collapsed with collapse_whitespace")
+  or diag Dumper($cleaned);
+
+%sch = (
+        first => {
+                  required => 1,
+                  options => { collapse_whitespace => 0 },
+                 },
+        second => { required => 1 },
+       );
+
+$validator = Data::Transpose::Validator->new(collapse_whitespace => 1);
+$validator->prepare(%sch);
+
+$form = {
+         first => "test\n\ntest",
+         second => "hello \n\n world",
+        };
+
+$expectedform = {
+                 first => "test\n\ntest",
+                 second => 'hello world',
+                };
+
+$cleaned = $validator->transpose($form);
+is_deeply($cleaned, $expectedform,
+          "whitespace collapsed with collapse_whitespace except where not set")
+  or diag Dumper($cleaned);

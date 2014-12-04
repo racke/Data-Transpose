@@ -1,5 +1,9 @@
 Revision history for Data::Transpose
 
+0.0011 UNRELEASED
+
+    * Added option collapse_whitespace to validator.
+
 0.0010 Wed Apr 30 08:58:07 2014 CEST
 
     [BUG FIXES]
