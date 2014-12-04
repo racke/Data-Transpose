@@ -5,7 +5,7 @@ use warnings;
 use Data::Transpose::Validator;
 use Data::Dumper;
 
-use Test::More tests => 20;
+use Test::More tests => 22;
 
 my $dtv = Data::Transpose::Validator->new();
 
@@ -167,8 +167,55 @@ my $expectedform = { %$form };
 is_deeply($cleaned, $expectedform, "fields not passed but not required
 will be undefined but preset)");
 
-print Dumper($form, $expectedform);
+# print Dumper($form, $expectedform);
+
+# collapse whitespace false by default
+
+%sch = (
+        first => { required => 1 },
+        second => { required => 1 },
+        third => { required => 1 },
+       );
+
+$form = {
+         first => '  test test    ',
+         second => ' prova   prova   ',
+         third => " hello\n\n hello  ",
+        };
+
+$validator = Data::Transpose::Validator->new();
+
+$validator->prepare(%sch);
+
+$expectedform = {
+                 first => 'test test',
+                 second => 'prova   prova',
+                 third => "hello\n\n hello",
+                };
 
 
+$cleaned = $validator->transpose($form);
+is_deeply($cleaned, $expectedform, "no collapsing by default");
 
+%sch = (
+        first => { required => 1 },
+        second => { required => 1 },
+        third => { required => 1 },
+       );
 
+$form = {
+         first => '  test test    ',
+         second => ' prova   prova   ',
+         third => " hello\n\n hello  ",
+        };
+
+$validator = Data::Transpose::Validator->new(collapse_whitespace => 1);
+$validator->prepare(%sch);
+
+$expectedform = {
+                 first => 'test test',
+                 second => 'prova prova',
+                 third => 'hello hello',
+                };
+is_deeply($cleaned, $expectedform,
+          "whitespace collapsed with collapse_whitespace");
