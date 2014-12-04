@@ -595,7 +595,7 @@ nothing if there were errors.
 
 sub transpose {
     my ($self, $hash) = @_;
-    die "Wrong usage! A hashref as argument is needed!\n"
+    die "Wrong usage! A hashref is needed as argument for transpose method!\n"
       unless ($hash and (ref($hash) eq 'HASH'));
     $self->reset_self;
 
