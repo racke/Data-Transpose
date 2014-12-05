@@ -1,8 +1,12 @@
 Revision history for Data::Transpose
 
-0.0011 UNRELEASED
+0.0011 Fri Dec  5 12:28:44 2014 CET
 
-    * Added option collapse_whitespace to validator.
+    [ENHANCEMENTS]
+
+    * Added option collapse_whitespace to validator (GH #7, Marco Pessotto).
+    * Clarify error message on hashref check in transpose method
+      (Stefan Hornburg).
 
 0.0010 Wed Apr 30 08:58:07 2014 CEST
 
