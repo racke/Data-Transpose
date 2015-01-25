@@ -15,6 +15,7 @@ my %valid = (
     '"Stefan Hornburg (Racke)" <racke@linuxia.de>' => 'racke@linuxia.de',
     'fast_typer@gmail.ocm'                         => 'fast_typer@gmail.com',
     ' pit@bull.de '                                => 'pit@bull.de',
+    'funny@web..de'                                => 'funny@web.de',
     "o'brian\@gmail.com" => '',
     'victorochieng\'679@yahoo.com'            => '',
 

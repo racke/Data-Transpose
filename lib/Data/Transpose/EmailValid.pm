@@ -190,6 +190,9 @@ sub _autocorrect {
     foreach (qw/aol gmail hotmail yahoo/) {
         $email =~ s/\b$_\.ocm$/$_.com/;
     }
+    # double dots in domain part
+    $email =~ s/\.\.(\w+)$/.$1/;
+
     # setting the error breaks the retrocompatibility
     # $self->error("typo?");
     return $email;
