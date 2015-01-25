@@ -29,6 +29,25 @@ Data::Transpose::EmailValid - Perl extension to check if a mail is valid (with s
 This module check if the mail is valid, using the L<Email::Valid>
 module. It also provides some additional methods.
 
+=head2 AUTO CORRECTION
+
+This validator corrects common mistakes automatically:
+
+=over 4
+
+=item
+
+C<.ocm> instead of C<.com> as top level domain for C<aol.com>,
+C<gmail.com>, C<hotmail.com> and C<yahoo.com>, e.g. C<tp@gmail.ocm>.
+
+=item
+
+Double dots before top level domain, e.g. C<tp@linuxia..de>.
+
+=back
+
+Please suggest further auto correction examples to us.
+
 =head1 METHODS
 
 =head2 new
