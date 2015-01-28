@@ -97,8 +97,7 @@ has unknown => (is => 'ro',
                 },
                 default => sub { 'pass' });
 
-
-has fields => (is => 'ro',
+has _fields => (is => 'ro',
                isa => ArrayRef[Object],
                default => sub { [] },
               );
@@ -118,7 +117,7 @@ sub field {
 
     $object = Data::Transpose::Field->new(name => $name);
 
-    push @{$self->fields}, $object;
+    push @{$self->_fields}, $object;
 
     return $object;
 }
@@ -137,7 +136,7 @@ sub group {
     my $object = Data::Transpose::Group->new(name => $name,
                                              objects => \@objects);
 
-    push @{$self->fields}, $object;
+    push @{$self->_fields}, $object;
     
     return $object;
 }
@@ -156,7 +155,7 @@ sub transpose {
 
     $status{$_} = 1 for keys %$vref;
 
-    for my $fld (@{$self->fields}) {
+    for my $fld (@{$self->_fields}) {
         $fld_name = $fld->name;
 
         # set value and apply operations
@@ -203,7 +202,7 @@ sub transpose_object {
     my ($self, $obj) = @_;
     my ($weed_value, $fld_name, $new_name, %new_record, %status);
 
-    for my $fld (@{$self->fields}) {
+    for my $fld (@{$self->_fields}) {
         $fld_name = $fld->name;
 
         # set value and apply operations
