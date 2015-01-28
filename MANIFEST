@@ -26,6 +26,7 @@ t/00-load.t
 t/dtv-groups.t
 t/dtv-syntax.t
 t/filter-with-sub.t
+t/group-chaining.t
 t/iterator-scalar.t
 t/iterator-simple.t
 t/manifest.t

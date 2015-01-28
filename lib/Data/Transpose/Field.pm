@@ -24,6 +24,7 @@ use MooX::Types::MooseLike::Base qw(:all);
 use namespace::clean;
 
 has name => (is => 'rw',
+             required => 1,
              isa => Str);
 
 has target => (is => 'rw',
