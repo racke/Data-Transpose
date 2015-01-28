@@ -37,7 +37,7 @@ has join => (is => 'rw',
              default => sub { ' ' },
              isa => Str);
 
-has output => (is => 'rwp',
+has _output => (is => 'rwp',
                isa => Str,
               );
 
@@ -52,6 +52,10 @@ Set name of the group:
 Get name of the group:
 
     $group->name;
+
+=head2 objects
+
+Passed only to the constructor. Arrayref with the field objects.
 
 =cut
 
@@ -109,17 +113,17 @@ sub value {
     my $token;
     
     if (@_) {
-        $self->_set_output(shift);
+        $self->_set__output(shift);
     }
     else {
         # combine field values
-        $self->_set_output(CORE::join($self->join,
+        $self->_set__output(CORE::join($self->join,
                                      map {my $value = $_->value;
                                           defined $value ? $value : '';
                                      } @{$self->objects}));
     }
     
-    return $self->output;
+    return $self->_output;
 }
 
 =head2 target
