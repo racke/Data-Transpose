@@ -7,6 +7,10 @@ use warnings;
 use Data::Transpose::Field;
 use Data::Transpose::Group;
 
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
+
 =head1 NAME
 
 Data::Transpose - Transpose, iterate, filter and validate data
@@ -17,11 +21,11 @@ transposing to different field names.
 
 =head1 VERSION
 
-Version 0.0011
+Version 0.0012
 
 =cut
 
-our $VERSION = '0.0011';
+our $VERSION = '0.0012';
 
 =head1 SYNOPSIS
 
@@ -80,30 +84,25 @@ This doesn't apply to the L</transpose_object> method.
 
 =cut
 
-sub new {
-    my ($class, $self, %args);
+has unknown => (is => 'ro',
+                isa => sub {
+                    my $unknown = $_[0];
+                    my %permitted = (
+                                     fail => 1,
+                                     pass => 1,
+                                     skip => 1,
+                                    );
+                    die "unknown accepts only " . join(' ', keys %permitted)
+                      unless $permitted{$unknown};
+                },
+                default => sub { 'pass' });
 
-    $class = shift;
-    $self = {unknown => 'pass'};
-    bless $self, $class;
 
-    %args = @_;
+has fields => (is => 'ro',
+               isa => ArrayRef[Object],
+               default => sub { [] },
+              );
 
-    if (defined $args{unknown}) {
-        if ($args{unknown} eq 'fail'
-            || $args{unknown} eq 'pass'
-            || $args{unknown} eq 'skip') {
-            $self->{unknown} = $args{unknown};
-        }
-        else {
-            die "Invalid parameter for unknown (use either fail, pass or skip).\n";
-        }
-    }
-
-    $self->{fields} = [];
-
-    return $self;
-}
 
 =head2 field
 
@@ -119,7 +118,7 @@ sub field {
 
     $object = Data::Transpose::Field->new(name => $name);
 
-    push @{$self->{fields}}, $object;
+    push @{$self->fields}, $object;
 
     return $object;
 }
@@ -138,7 +137,7 @@ sub group {
     my $object = Data::Transpose::Group->new(name => $name,
                                              objects => \@objects);
 
-    push @{$self->{fields}}, $object;
+    push @{$self->fields}, $object;
     
     return $object;
 }
@@ -157,7 +156,7 @@ sub transpose {
 
     $status{$_} = 1 for keys %$vref;
 
-    for my $fld (@{$self->{fields}}) {
+    for my $fld (@{$self->fields}) {
         $fld_name = $fld->name;
 
         # set value and apply operations
@@ -180,13 +179,13 @@ sub transpose {
 
     if (keys %status) {
         # unknown fields
-        if ($self->{unknown} eq 'pass') {
+        if ($self->unknown eq 'pass') {
             # pass through unknown fields
             for (keys %status) {
                 $new_record{$_} = $vref->{$_};
             }
         }
-        elsif ($self->{unknown} eq 'fail') {
+        elsif ($self->unknown eq 'fail') {
             die "Unknown fields in input: ", join(',', keys %status), '.';
         }
     }
@@ -204,7 +203,7 @@ sub transpose_object {
     my ($self, $obj) = @_;
     my ($weed_value, $fld_name, $new_name, %new_record, %status);
 
-    for my $fld (@{$self->{fields}}) {
+    for my $fld (@{$self->fields}) {
         $fld_name = $fld->name;
 
         # set value and apply operations

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 
 use Data::Transpose;
 use Data::Dumper;
@@ -39,3 +39,6 @@ eval {
 ok($@, 
    'test for unknown behaviour (fail)')
     || diag "Transpose output: " . Dumper($output);
+
+eval { $tp = Data::Transpose->new(unknown => 'dummy'); };
+ok ($@, "Crash on for wrong constructor: $@");

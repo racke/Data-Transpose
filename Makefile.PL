@@ -21,6 +21,8 @@ WriteMakefile(
         'Scalar::Util' => 0,
         'Business::CreditCard' => 0.32,
         'Moo' => 0,
+        'MooX::Types::MooseLike' => 0,
+        'namespace::clean' => 0,
     },
     META_MERGE        => {
         resources => {
