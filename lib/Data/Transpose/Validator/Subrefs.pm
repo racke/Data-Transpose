@@ -1,8 +1,10 @@
 package Data::Transpose::Validator::Subrefs;
 use strict;
 use warnings;
-
-use base 'Data::Transpose::Validator::Base';
+use Moo;
+extends 'Data::Transpose::Validator::Base';
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 =head1 NAME
 
@@ -37,26 +39,11 @@ elements, where the first should be undefined (see the example above).
 
 =cut
 
-sub new {
-    my $class = shift;
-    my $new = shift;
-    die "You have to pass a subref to this class!\n"
-      unless (ref($new) eq 'CODE');
-    my $self = {
-                call => $new,
-               };
-    bless $self, $class;
-}
+has call => (is => 'rw', isa => CodeRef, required => 1);
 
 =head2 call
 
 Accessor to the subroutine
-
-=cut
-
-sub call {
-    return shift->{call};
-}
 
 =head2 is_valid($what)
 
@@ -76,6 +63,13 @@ sub is_valid {
         return $result;
     }
 }
+
+sub BUILDARGS {
+    # straight from the manual
+    my ($class, @args) = @_;
+    unshift @args, 'call' if @args % 2 == 1;
+    return { @args };
+};
 
 
 1; # the last famous words
