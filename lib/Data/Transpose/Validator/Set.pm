@@ -1,9 +1,11 @@
 package Data::Transpose::Validator::Set;
 use strict;
 use warnings;
-
-use base 'Data::Transpose::Validator::Base';
 use Scalar::Util qw/looks_like_number/;
+use Moo;
+extends 'Data::Transpose::Validator::Base';
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 =head1 NAME
 
@@ -18,21 +20,14 @@ present.
 
 =cut
 
+has list => (is => 'rw',
+             isa => ArrayRef,
+             required => 1,
+            );
 
-sub new {
-    my $class = shift;
-    my %args = @_;
-    my $self = {
-                list => [],
-                multiple => 0,
-               };
-    unless ($args{list} and (ref($args{list}) eq 'ARRAY')) {
-        die "Fatal: you must set the list in the constructor\n" 
-    }
-    $self = \%args;
-    bless $self, $class;
-}
-
+has multiple => (is => 'rw',
+                 isa => Bool,
+                 default => sub { 0 });
 
 
 =head2 is_valid($value, [ $value, $value, ... ] )
@@ -52,7 +47,7 @@ sub is_valid {
     if (@args == 1) {
         my $arg = shift @args;
         if (ref($arg) eq 'ARRAY') {
-            if ($self->wants_multiple) {
+            if ($self->multiple) {
                 push @input, @$arg
             }
             else {
@@ -67,7 +62,7 @@ sub is_valid {
         }
     }
     elsif (@args > 1) {
-        if ($self->wants_multiple) {
+        if ($self->multiple) {
             push @input, @args;
         } else {
             $self->error([nomulti => "No multiple values are allowed"]);
@@ -83,7 +78,7 @@ sub is_valid {
 
 sub _check_set {
     my ($self, @input) = @_;
-    my %list = $self->list;
+    my %list = $self->list_as_hash;
     foreach my $val (@input) {
         $self->error(["missinginset", "No match in the allowed values"])
           unless exists $list{$val};
@@ -94,28 +89,23 @@ sub _check_set {
 
 =head1 INTERNAL METHODS
 
-=head2 wants_multiple
+=head2 multiple
 
 Accessor to the C<multiple> option
 
-=cut
-
-sub wants_multiple {
-    return shift->{multiple}
-}
-
 =head2 list
+
+Accessor to the C<list> option
+
+=head2 list_as_hash
 
 Accessor to the list of values, as an hash.
 
 =cut
 
-sub list {
+sub list_as_hash {
     my $self = shift;
-    my %list;
-    foreach my $e (@{$self->{list}}) {
-        $list{$e} = 1;
-    }
+    my %list = map { $_ => 1 } @{$self->list};
     return %list;
 }
 
