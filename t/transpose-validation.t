@@ -96,7 +96,8 @@ is($dtv->option_for_field(stripwhite => "email"), 0,
 my @objoptions = sort qw/missing stripwhite requireall unknown
                          collapse_whitespace/;
 my @optionstocheck = $dtv->options;
-is_deeply(\@objoptions, \@optionstocheck, "Checking ->options");
+is_deeply(\@objoptions, \@optionstocheck, "Checking ->options")
+  or diag Dumper([ $dtv->options ]);
 
 eval {
     $dtv->field({}, 1);
