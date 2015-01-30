@@ -4,8 +4,11 @@ use 5.010001;
 use strict;
 use warnings;
 # use Data::Dumper;
-use base 'Data::Transpose::Validator::Base';
 
+use Moo;
+extends 'Data::Transpose::Validator::Base';
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 our $VERSION = '0.02';
 
@@ -80,52 +83,60 @@ seconds while we check it). Nothing more.
 
 =cut
 
-=head2 new(\%credentials)
+=head2 new(%credentials)
 
 Create a new Data::Transpose::PasswordPolicy object using the
-credentials provided as hashref.
+credentials provided to the constructor.
 
 =cut
 
-sub new {
-    my ($class, @args) = @_;
-    my $self = {};
-    my $new;
-    if (@args % 2 == 0) {
-        my %opts = @args;
-        $new = \%opts
+has username => (is => 'rw',
+                 isa => Str);
+
+has password => (is => 'rw',
+                 isa => Str);
+
+around password => \&_strip_space_on_around;
+around username => \&_strip_space_on_around;
+
+sub _strip_space_on_around {
+    my $orig = shift;
+    my $ret = $orig->(@_);
+    if (not defined $ret) {
+        return '';
     }
     else {
-        $new = shift(@args);
+        $ret =~ s/^\s*//s;
+        $ret =~ s/\s*$//s;
+        return $ret;
     }
-
-    if ($new and (ref($new) eq 'HASH')) {
-	foreach my $par (qw/username password/) {
-	    if ($new->{$par}) {
-		$self->{$par} = _strip_spaces($new->{$par})
-	    }
-	}
-	foreach my $len (qw/minlength maxlength mindiffchars patternlength/) {
-	    if (my $wantedlen = $new->{$len}) {
-		if ($wantedlen =~ m/0*(\d+)/) {
-		    $self->{$len} = $1;
-		}
-	    }
-	}
-	# disabled
-	if ($new->{disabled} and (ref($new->{disabled}) eq 'HASH')) {
-	    # warn "Disabling in the constructor";
-	    $self->{disabled} = $new->{disabled};
-	} else {
-	    # warn "Nothing disabled";
-	    #	    print Dumper($new);
-	    $self->{disabled} = {};
-	}
-    } else {
-	$self = {};
-    }
-    bless $self, $class;
 }
+
+
+has maxlength => (is => 'rw',
+                  isa => Int,
+                  default => sub { 255 },
+                 );
+
+has minlength => (is => 'rw',
+                  isa => Int,
+                  default => sub { 12 },
+                 );
+
+
+has mindiffchars => (is => 'rw',
+                     isa => Int,
+                     default => sub { 6 },
+                    );
+
+has patternlength => (is => 'rw',
+                      isa => Int,
+                      default => sub { 3 },
+                     );
+
+has disabled => (is => 'rw',
+                 isa => HashRef,
+                 default => sub { {} });
 
 
 =head1 ACCESSORS
@@ -139,37 +150,6 @@ the current. It will strip leading and trailing spaces.
 
 Set and return the new username. If no argument is provided, returns
 the current. It will strip leading and trailing spaces.
-
-=cut
-
-sub password {
-    my ($self, $password) = @_;
-    if ($password) {
-	$self->{password} = _strip_spaces($password);
-    }
-    if (not defined $self->{password}) {
-	$self->{password} = "";
-    }
-    return $self->{password};
-}
-
-sub username {
-    my ($self, $username) = @_;
-    if ($username) {
-	$self->{username} = _strip_spaces($username);
-    }
-    return $self->{username};
-}
-
-sub _strip_spaces {
-    my $string = shift;
-    return unless defined $string;
-    if ($string =~ m/^\s*(.+?)\s*$/s) {
-	return $1;
-    } else {
-	return undef;
-    }
-}
 
 =head2 $obj->password_length
 
@@ -205,60 +185,6 @@ the password, like "abcd", or "1234", or "asdf". By default it's 3, so
 a password which merely contains "abc" will be discarded.
 
 This option can also be set in the constructor.
-
-=cut
-
-sub minlength {
-    my ($self, $length) = @_;
-    return $self->_get_or_set_length('minlength', $length);
-}
-
-sub maxlength {
-    my ($self, $length) = @_;
-    return $self->_get_or_set_length('maxlength', $length);
-}
-
-sub mindiffchars {
-    my ($self, $length) = @_;
-    return $self->_get_or_set_length('mindiffchars', $length);
-}
-
-sub patternlength {
-    my ($self, $length) = @_;
-    return $self->_get_or_set_length('patternlength', $length);
-}
-
-sub _get_or_set_length {
-    my ($self, $which, $length) = @_;
-    if ($length && $length =~ m/^0*(\d+)$/) {
-	# set the length
-	$self->{$which} = $length;
-    }
-    # or return the existing
-    elsif (my $len = $self->{$which}) {
-	return $len;
-    }
-    # or set the default
-    else {
-	if ($which eq 'maxlength') {
-	    $self->{$which} = 255;
-	}
-	elsif ($which eq 'minlength') {
-	    $self->{$which} = 12;
-	}
-	elsif ($which eq 'mindiffchars') {
-	    $self->{$which} = 6;
-	}
-	elsif ($which eq 'patternlength') {
-	    $self->{$which} = 3;
-	}
-	else {
-	    die "Wrong usage! This method is internal!\n"
-	}
-	# warn "Setting $which to $self->{$which}";
-	return $self->{$which};
-    }
-}
 
 =head1 Internal algorithms
 
@@ -765,18 +691,18 @@ sub _get_or_set_disable {
     my ($self, $what, $action) = @_;
     return undef unless $what;
     unless ($action) {
-	return $self->{disabled}->{$what}
+	return $self->disabled->{$what}
     }
     if ($action eq 'enable') {
-	$self->{disabled}->{$what} = 0;
+	$self->disabled->{$what} = 0;
     }
     elsif ($action eq 'disable') {
-	$self->{disabled}->{$what} = 1;
+	$self->disabled->{$what} = 1;
     }
     else {
 	die "Wrong action!\n"
     }
-    return $self->{disabled}->{$what};
+    return $self->disabled->{$what};
 }
 
 

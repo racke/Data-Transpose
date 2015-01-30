@@ -3,6 +3,10 @@ package Data::Transpose::Validator::Base;
 use strict;
 use warnings;
 
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
+
 =head1 NAME
 
 Data::Transpose::Validator::Base - Base class for Data::Transpose::Validator
@@ -23,17 +27,6 @@ Data::Transpose::Validator::Base - Base class for Data::Transpose::Validator
 
 Constructor. It accepts an hash with the options.
 
-=cut
-
-
-sub new {
-    my $class = shift;
-    my %options = @_;
-    my $self = {};
-    $self->{options} = \%options;
-    bless $self, $class;
-}
-
 =head2 required
 
 Set or retrieve the required option. Returns true if required, false
@@ -41,13 +34,9 @@ otherwise.
 
 =cut
 
-sub required {
-    my $self = shift;
-    if (@_) {
-        $self->{_dtv_required} = shift;
-    }
-    return $self->{_dtv_required};
-}
+has required => (is => 'rw',
+                 isa => Bool,
+                 default => sub { 0 });
 
 =head2 dtv_options
 
@@ -62,13 +51,8 @@ E.g.
 
 =cut
 
-sub dtv_options {
-    my $self = shift;
-    if (@_) {
-        $self->{_dtv_options} = shift;
-    }
-    return $self->{_dtv_options};
-}
+has dtv_options => (is => 'rw',
+                    isa => Maybe[HashRef]);
 
 =head2 dtv_value
 
@@ -76,13 +60,24 @@ On transposing, the value of the field is stored here.
 
 =cut
 
-sub dtv_value {
-    my $self = shift;
-    if (@_) {
-        $self->{_dtv_value} = shift;
-    }
-    defined $self->{_dtv_value} ? return $self->{_dtv_value} : return "";
-}
+has dtv_value => (is => 'rw');
+
+around dtv_value => sub {
+    my $orig = shift;
+    my $ret = $orig->(@_);
+    defined $ret ? return $ret : return '';
+};
+
+has _error => (is => 'rw',
+               isa => ArrayRef,
+               default => sub { [] },
+              );
+
+
+has _warnings => (is => 'rw',
+                  isa => ArrayRef,
+                  default => sub { [] });
+
 
 =head2 reset_dtv_value
 
@@ -91,8 +86,7 @@ Delete the dtv_value from the object
 =cut
 
 sub reset_dtv_value {
-    my $self = shift;
-    delete $self->{_dtv_value};
+    shift->dtv_value(undef);
 }
 
 
@@ -127,7 +121,6 @@ pair of code and strings.
 
 =cut
 
-
 sub error {
     my ($self, $error) = @_;
     if ($error) {
@@ -141,14 +134,10 @@ sub error {
         else {
             die "Wrong usage: error accepts strings or arrayrefs\n";
         }
-        if (defined $self->{error}) {
-	    push @{$self->{error}}, $error_code_string;
-	} else {
-	    $self->{error} = [ $error_code_string ];
+	    push @{$self->_error}, $error_code_string;
 	}
-    }
-    return unless defined $self->{error};
-    my @errors = @{$self->{error}};
+    my @errors = @{$self->_error};
+    return unless @errors;
 
     my $errorstring = join("; ", map { $_->[1] } @errors);
     # in scalar context, we stringify
@@ -161,12 +150,9 @@ Clear the errors stored.
 
 =cut
 
-
 sub reset_errors {
-    my $self = shift;
-    $self->{error} = undef;
+    shift->_error([]);
 }
-
 
 =head2 error_codes
 
@@ -197,16 +183,14 @@ Reset the warning list.
 
 sub warnings {
     my ($self, @warn) = @_;
-    $self->{warnings} ||= [];
     if (@warn) {
-        push @{$self->{warnings}}, @warn;
+        push @{$self->_warnings}, @warn;
     }
-    return @{ $self->{warnings} };
+    return @{ $self->_warnings };
 }
 
 sub reset_warnings {
-    my $self = shift;
-    delete $self->{warnings};
+    shift->_warnings([]);
 }
 
 
