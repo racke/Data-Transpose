@@ -3,7 +3,10 @@ package Data::Transpose::Validator::Group;
 use strict;
 use warnings;
 
-use base 'Data::Transpose::Validator::Base';
+use Moo;
+extends 'Data::Transpose::Validator::Base';
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 =head1 NAME
 
@@ -17,35 +20,20 @@ Data::Transpose::Validator::Group - Class for grouped field
 
 =cut
 
-sub new {
-    my ($class, %args) = @_;
-    my $self = {};
+has fields => (is => 'ro',
+               isa => ArrayRef);
 
-    foreach my $f (qw/fields name/) {
-        # check for mandatory arg
-        die "Missing $f!" unless $args{$f};
-        $self->{$f} = $args{$f};
-    }
+has name => (is => 'ro',
+             isa => Str);
 
-    if (exists $args{equal}) {
-        $self->{equal} = $args{equal};
-    }
-    else {
-        $self->{equal} = 1;
-    }
+has equal => (is => 'rw',
+              isa => Bool,
+              default => sub { 1 });
 
-    bless $self, $class;
-}
 
 =head2 fields
 
-Return the list of the objects set in the constructor. This is read only.
-
-=cut
-
-sub fields {
-    return @{ shift->{fields} };
-}
+Return an arrayref of the objects set in the constructor. This is read only.
 
 =head2 name
 
@@ -55,29 +43,10 @@ concatenated with "%s differ" makes sense.
 
 E.g. "passwords" will produce such an error: "Passwords differ!";
 
-
-
-=cut
-
-sub name {
-    return shift->{name};
-}
-
-
 =head2 equal
 
 Set to a true value if the check for equality is needed. Defaults to
 true, and so far it's the only use of this module.
-
-=cut
-
-sub equal {
-    my $self = shift;
-    if (@_) {
-        $self->{equal} = shift;
-    }
-    return $self->{equal};
-}
 
 =head2 is_valid
 
@@ -109,7 +78,7 @@ sub is_valid {
 
 sub _check_if_fields_are_equal {
     my $self = shift;
-    my @fields = $self->fields;
+    my @fields = @{$self->fields};
     my $value;
     my $equal = 1;
     foreach my $f (@fields) {
