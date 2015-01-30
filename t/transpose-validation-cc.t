@@ -45,7 +45,7 @@ foreach my $type (keys %$test_nums) {
     if ($type eq 'VISA card' or
         $type eq 'MasterCard') {
         foreach my $num (@{$test_nums->{$type}}) {
-            ok($v->is_valid($num), "$type $num is valid");
+            ok($v->is_valid($num), "$type $num is valid") or diag Dumper($v);
         }
     }
     else {
