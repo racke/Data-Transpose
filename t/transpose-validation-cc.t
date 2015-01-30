@@ -33,7 +33,7 @@ foreach my $type (keys  %$test_nums) {
     }
 }
 
-diag "Testing types";
+# diag "Testing types";
 
 $v = Data::Transpose::Validator::CreditCard->new(country => 'DE',
                                                  types => ["visa card",
@@ -57,7 +57,7 @@ foreach my $type (keys %$test_nums) {
         
 }
 
-diag "Testing a cc form with DTV";
+# diag "Testing a cc form with DTV";
 my $dtv = Data::Transpose::Validator->new();
 $dtv->prepare(
               cc_number => {
