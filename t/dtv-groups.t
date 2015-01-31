@@ -88,7 +88,7 @@ my $form = { password => 'a',
 my $res = $dtv->transpose($form);
 
 ok(!$res);
-ok($dtv->packed_errors) and diag $dtv->packed_errors;
+ok($dtv->packed_errors); # and diag $dtv->packed_errors;
 
 $res = $dtv->transpose({ password => 'a', confirm_password => 'a' });
 ok ($res);
@@ -102,7 +102,7 @@ ok ($dtv->packed_errors);
 $res = $dtv->transpose( { password => '', confirm_password => 'c' });
 ok (!$res);
 ok ($dtv->errors);
-diag $dtv->packed_errors;
+# diag $dtv->packed_errors;
 
 
 $dtv = Data::Transpose::Validator->new;
@@ -114,12 +114,12 @@ $res = $dtv->transpose({password => "a", confirm_password => "c" });
 ok($res);
 my $group = $dtv->group('passwords');
 ok($group, "Object retrieved");
-ok($group->warnings, "Warning found") and diag $group->warnings;
+ok($group->warnings, "Warning found"); # diag $group->warnings;
 
 # even if equal, the validation doesn't pass because of the empty strings
 $res = $dtv->transpose({password => "", confirm_password => "" });
 ok(!$res);
-ok($dtv->errors) and diag join("\n", $dtv->packed_errors);
+ok($dtv->errors); # diag join("\n", $dtv->packed_errors);
 
 
 # first test bad configurations
@@ -135,7 +135,7 @@ eval {
                    }
                   ]);
 };
-ok ($@, "Exception with Group when passing no name") and diag $@;
+ok ($@, "Exception with Group when passing no name");
 
 $dtv = Data::Transpose::Validator->new;
 eval {
@@ -148,7 +148,7 @@ eval {
                      validator => 'Group' }
                   ]);
 };
-ok ($@, "Exception with Group when passing no fields") and diag $@;
+ok ($@, "Exception with Group when passing no fields");
 
 $dtv = Data::Transpose::Validator->new;
 eval {
@@ -163,7 +163,7 @@ eval {
                    }
                   ]);
 };
-ok ($@, "Exception with Group when passing unexistent fields") and diag $@;
+ok ($@, "Exception with Group when passing unexistent fields");
 
 $dtv = Data::Transpose::Validator->new;
 eval {
@@ -179,28 +179,25 @@ eval {
                    }
                   ]);
 };
-ok ($@, "Exception with Group when passing unknown keys") and diag $@;
+ok ($@, "Exception with Group when passing unknown keys");
 
 
-diag "Testing the group in config with passwords";
+# diag "Testing the group in config with passwords";
 $dtv = Data::Transpose::Validator->new;
 $dtv->prepare(get_schema());
 
 $res = $dtv->transpose({ password => "abc", confirm_password => "abc" });
-ok ((!$res && $dtv->errors), "Passwords match, but too easy")
-  and diag ($dtv->packed_errors . "");
-
+ok ((!$res && $dtv->errors), "Passwords match, but too easy");
 
 $res = $dtv->transpose({ password => "a1xd8,3z90j241efs0", confirm_password => "abc" });
-ok ((!$res && $dtv->errors), "Good password, but no match")
-  and diag ($dtv->packed_errors . "");
+ok ((!$res && $dtv->errors), "Good password, but no match");
 
 $res = $dtv->transpose({ password => "a1xd8,3z90j241efs0",
                          confirm_password => "a1xd8,3z90j241efs0" });
 ok (($res && !$dtv->errors), "Good passwords and match, fully validated");
 
 
-diag "Testing with hash";
+# diag "Testing with hash";
 $dtv = Data::Transpose::Validator->new;
 $dtv->prepare(get_hash_schema());
 
@@ -211,13 +208,13 @@ ok $dtv->field("confirm_password")->required;
 
 
 $res = $dtv->transpose({ password => "abc", confirm_password => "abc" });
-ok ((!$res && $dtv->errors), "Passwords match, but too easy")
-  and diag ($dtv->packed_errors . "");
+ok ((!$res && $dtv->errors), "Passwords match, but too easy");
+#  and diag ($dtv->packed_errors . "");
 
 
 $res = $dtv->transpose({ password => "a1xd8,3z90j241efs0", confirm_password => "abc" });
-ok ((!$res && $dtv->errors), "Good password, but no match")
-  and diag ($dtv->packed_errors . "");
+ok ((!$res && $dtv->errors), "Good password, but no match");
+#  and diag ($dtv->packed_errors . "");
 
 $res = $dtv->transpose({ password => "a1xd8,3z90j241efs0",
                          confirm_password => "a1xd8,3z90j241efs0" });
@@ -232,7 +229,7 @@ $res = $dtv->transpose({ password => "", confirm_password => "abc" });
 ok(($res && !$dtv->errors), "Unfortunately no check on match is done now");
 $dtv->group("passwords")->equal(0);
 $res = $dtv->transpose({ password => "", confirm_password => "" });
-ok(!$res && $dtv->errors) and diag $dtv->packed_errors . "";
+ok(!$res && $dtv->errors); #  and diag $dtv->packed_errors . "";
 $res = $dtv->transpose({ password => "a1xd8,3z90j241efs0",
                          confirm_password => "a1xd8,3z90j241efs0" } );
 ok($res && !$dtv->errors);

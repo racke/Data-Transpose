@@ -16,30 +16,26 @@ Data::Transpose::Field - Field class for Data::Transpose
 =head2 new
 
     $field = Data::Transpose::Field->new(name => 'email');
-    
+
 =cut
 
-sub new {
-    my ($class, $self, %args);
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
-    $class = shift;
-    %args = @_;
-    
-    $self = {
-        # name
-        name => $args{name},
-        # initial value
-        raw => undef,
-        # output value
-        output => undef,
-        # filters
-        filters => [],        
-    };
+has name => (is => 'rw',
+             required => 1,
+             isa => Str);
 
-    bless $self, $class;
+has target => (is => 'rw',
+               isa => Str);
 
-    return $self;
-}
+has _raw => (is => 'rwp');
+has _output => (is => 'rwp');
+has _filters => (is => 'ro',
+                 isa => ArrayRef,
+                 default => sub { [] },
+               );
 
 =head2 name
 
@@ -50,19 +46,6 @@ Set name of the field:
 Get name of the field:
 
     $field->name;
-
-=cut
-
-sub name {
-    my ($self, $name) = @_;
-
-    if (defined $name) {
-        $self->{name} = $name;
-        return $self;
-    }
-
-    return $self->{name};
-}
 
 =head2 value
 
@@ -77,12 +60,12 @@ sub value {
     my $token;
     
     if (@_) {
-        $self->{raw} = shift;
-        $token = $self->{raw};
-        $self->{output} = $self->_apply_filters($token);
+        $self->_set__raw(shift);
+        $token = $self->_raw;
+        $self->_set__output($self->_apply_filters($token));
     }
 
-    return $self->{output};
+    return $self->_output;
 }
 
 =head2 target
@@ -94,19 +77,6 @@ Set target name for target operation:
 Get target name:
 
     $field->target;
-
-=cut
-
-sub target {
-    my ($self, $name) = @_;
-
-    if (defined $name) {
-        $self->{target} = $name;
-        return $self;
-    }
-
-    return $self->{target};
-}
 
 =head2 filter
 
@@ -122,7 +92,7 @@ sub filter {
     my ($self, $filter) = @_;
 
     if (ref($filter) eq 'CODE') {
-        push @{$self->{filters}}, $filter;
+        push @{$self->_filters}, $filter;
     }
 
     return $self;
@@ -131,7 +101,7 @@ sub filter {
 sub _apply_filters {
     my ($self, $token) = @_;
     
-    for my $f (@{$self->{filters}}) {
+    for my $f (@{$self->_filters}) {
         $token = $f->($token);
     }
 

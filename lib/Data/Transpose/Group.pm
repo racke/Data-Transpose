@@ -21,25 +21,27 @@ Data::Transpose::Group - Group class for Data::Transpose
 
 =cut
 
-sub new {
-    my ($class, $self, %args);
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
-    $class = shift;
-    %args = @_;
-    
-    $self = {
-        # name
-        name => $args{name},
-        # joiner
-        join => ' ',
-        # objects
-        objects => $args{objects},        
-    };
+has name => (is => 'rw',
+             required => 1,
+             isa => Str);
 
-    bless $self, $class;
+has objects => (is => 'ro',
+                isa => ArrayRef[Object],
+                required => 1);
 
-    return $self;
-}
+has join => (is => 'rw',
+             default => sub { ' ' },
+             isa => Str);
+
+has _output => (is => 'rwp',
+               isa => Str,
+              );
+
+has target => (is => 'rw');
 
 =head2 name
 
@@ -51,18 +53,23 @@ Get name of the group:
 
     $group->name;
 
+=head2 objects
+
+Passed only to the constructor. Arrayref with the field objects.
+
 =cut
 
-sub name {
-    my ($self, $name) = @_;
-
+sub _return_object_on_set {
+    my ($orig, $self, $name) = @_;
     if (defined $name) {
-        $self->{name} = $name;
+        $orig->($self, $name);
         return $self;
     }
-
-    return $self->{name};
+    return $orig->($self);
 }
+
+around name => \&_return_object_on_set;
+
 
 =head2 fields
 
@@ -73,7 +80,7 @@ Returns field objects for this group:
 =cut
 
 sub fields {
-    return shift->{objects};
+    return shift->objects;
 }
 
 =head2 join
@@ -89,17 +96,9 @@ Get string for joining field values:
 The default string is a single blank character.
 
 =cut
-    
-sub join {
-    my ($self, $join) = @_;
 
-    if (defined $join) {
-        $self->{join} = $join;
-        return $self;
-    }
-
-    return $self->{join};
-}
+around join => \&_return_object_on_set;
+around target => \&_return_object_on_set;
 
 =head2 value
 
@@ -114,17 +113,17 @@ sub value {
     my $token;
     
     if (@_) {
-        $self->{output} = shift;
+        $self->_set__output(shift);
     }
     else {
         # combine field values
-        $self->{output} = CORE::join($self->join,
+        $self->_set__output(CORE::join($self->join,
                                      map {my $value = $_->value;
                                           defined $value ? $value : '';
-                                     } @{$self->{objects}});
+                                     } @{$self->objects}));
     }
     
-    return $self->{output};
+    return $self->_output;
 }
 
 =head2 target
@@ -136,19 +135,9 @@ Set target name for target operation:
 Get target name:
 
     $group->target;
-    
+
 =cut
 
-sub target {
-    my ($self, $name) = @_;
-
-    if (defined $name) {
-        $self->{target} = $name;
-        return $self;
-    }
-
-    return $self->{target};
-}
 
 =head1 LICENSE AND COPYRIGHT
 

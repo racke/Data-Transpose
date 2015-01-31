@@ -2,11 +2,11 @@ package Data::Transpose::Validator::CreditCard;
 
 use strict;
 use warnings;
-use base 'Data::Transpose::Validator::Base';
-
 use Business::CreditCard;
-# exports 
-
+use Moo;
+extends 'Data::Transpose::Validator::Base';
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 =head1 NAME
 
@@ -108,40 +108,38 @@ is this, so use with caution. Recognized types:
 
 =cut
 
-sub new {
-    my $class = shift;
-    my %opts = @_;
-    my $self = {
-                country => "US",
-                types => [],
-               };
-
-    if ($opts{country}) {
-        $self->{country} = uc($opts{country});
-    }
-
-    if ($opts{types}) {
-        $self->{types} = [ @{ $opts{types} } ];
-    }
-
-    bless $self, $class;
+sub _recognized_types {
+    my @types = (
+                 'American Express card',
+                 'BankCard',
+                 'China Union Pay',
+                 'Discover card',
+                 'Isracard',
+                 'JCB',
+                 'Laser',
+                 'MasterCard',
+                 'Solo',
+                 'Switch',
+                 'VISA card',
+                );
+    return @types;
 }
 
-sub country {
-    my ($self, $country) = @_; 
-    if (defined $country) {
-        $self->{country} = uc($country);
-    }
-    return $self->{country};
-}
+has country => (is => 'rw',
+                isa => Str,
+                default => sub { 'US' },
+               );
+has types => (is => 'rw',
+              isa => sub {
+                  my $list = $_[0];
+                  die "Not an arrayref" unless is_ArrayRef($list);
+                  my %types = map { lc($_) => 1 } __PACKAGE__->_recognized_types;
+                  foreach my $type (@$list) {
+                      die "$type is not recognized" unless $types{lc($type)}
+                  }
+              },
+              default => sub { [] });
 
-sub types {
-    my ($self, $types) = shift;
-    if (defined $types and ref($types) eq 'ARRAY') {
-        $self->{types} = [ @$types ];
-    }
-    return @{$self->{types}};
-}
 
 
 =head2 is_valid
@@ -161,8 +159,8 @@ sub is_valid {
         $self->error(["invalid_cc", cardtype($string) . " (invalid)"]);
     }
     if (!$self->error) {
-        if (my @types = $self->types) {
-            $Business::CreditCard::Country = $self->country;
+        if (my @types = @{$self->types}) {
+            $Business::CreditCard::Country = uc($self->country);
             my $cardtype = cardtype($string);
             unless (grep { lc($_) eq lc($cardtype) } @types) {
                 $self->error(["cc_not_accepted",

@@ -2,8 +2,11 @@ package Data::Transpose::Validator::NumericRange;
 use strict;
 use warnings;
 
-use base 'Data::Transpose::Validator::Base';
+use Moo;
+extends 'Data::Transpose::Validator::Base';
 use Scalar::Util qw/looks_like_number/;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 =head1 NAME
 
@@ -19,23 +22,16 @@ option, which will validate only integers.
 =cut
 
 
-sub new {
-    my $class = shift;
-    my %args = @_;
-    my $self = {
-                min => 0,
-                max => 0,
-                integer => 0,
-               };
-    foreach my $opt (qw/min max/) {
-        die "Wrong range! $opt is mandatory and must be a number!" unless
-          looks_like_number($args{$opt});
-        $self->{$opt} = $args{$opt};
-    }
-    $self->{integer} = $args{integer};
-    bless $self, $class;
-}
-
+has min => (is => 'rw',
+            isa => Num,
+            required => 1);
+has max => (is => 'rw',
+            isa => Num,
+            required => 1);
+has integer => (is => 'rw',
+                isa => Bool,
+                default => sub { 0 },
+               );
 
 
 =head2 is_valid($number)
@@ -51,7 +47,7 @@ sub is_valid {
     $self->reset_errors;
     $self->error(["undefined", "Not defined"]) unless defined $arg;
     $self->error(["notanumber", "Not a number"]) unless looks_like_number($arg);
-    if ($self->wants_integer) {
+    if ($self->integer) {
         $self->error(["notinteger", "Not an integer"]) unless $arg =~ m/^\d+$/;
     }
     return undef if $self->error;
@@ -69,31 +65,15 @@ sub is_valid {
 
 Return the minimum
 
-=cut
-
-sub min {
-    return shift->{min};
-}
-
 =head2 min
 
 Return the maximum
 
-=cut
-
-
-sub max {
-    return shift->{max};
-}
-
-=head2 wants_integer
+=head2 integer
 
 Return true if we have to validate only integers
 
 =cut
 
-sub wants_integer {
-    return shift->{integer};
-}
 
 1;

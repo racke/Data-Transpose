@@ -2,11 +2,11 @@ package Data::Transpose::EmailValid;
 
 use strict;
 use warnings;
-
-use base 'Data::Transpose::Validator::Base';
-
 use Email::Valid;
-
+use Moo;
+extends 'Data::Transpose::Validator::Base';
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
 
 =head1 NAME
 
@@ -56,60 +56,29 @@ Constructor. It doesn't accept any arguments.
 
 =cut
 
-sub new {
-    my ($class) = @_;
-    my $self = bless {}, $class;
+has _email_valid => (is => 'ro',
+                     isa => Object,
+                     default => sub {
+                         return Email::Valid->new(
+                                                  -fudge   => 1,
+                                                  -mxcheck => 1,
+                                                 );
+                     });
 
-    $self->{email_valid} = Email::Valid->new(
-        -fudge   => 1,
-        -mxcheck => 1,
-    );
+has input => (is => 'rwp',
+              isa => Maybe[Str]);
 
-    return $self;
-}
+has output => (is => 'rwp',
+               isa => Maybe[Str]);
 
-# accessor read only to the Email::Valid object
-
-=head2 email_valid
-
-Accessor to the Email::Valid object
-
-=cut
-
-sub email_valid {
-    my $self = shift;
-    return $self->{email_valid};
-}
 
 =head2 input
 
 Accessor to the input email string.
 
-=cut 
-
-sub input {
-    my ($self, $input) = @_;
-    if (defined $input) {
-        $self->{input} = $input;
-    }
-    return $self->{input};
-}
-
 =head2 output
 
 Accessor to the output email string.
-
-=cut
-
-sub output {
-    my ($self, $output) = @_;
-    if (defined $output) {
-        $self->{output} = $output;
-    }
-    return $self->{output};
-
-
-}
 
 =head2 reset_all 
 
@@ -121,14 +90,9 @@ Clear all the internal data
 sub reset_all {
     my $self = shift;
     $self->reset_errors;
-    foreach (qw/input output/) {
-        delete $self->{$_} if exists $self->{$_}
-    }
+    $self->_set_input(undef);
+    $self->_set_output(undef);
 }
-
-
-
-
 
 =head2 $obj->is_valid($emailstring);
 
@@ -145,19 +109,19 @@ sub is_valid {
     # overwrite old data
     $self->reset_all;
 
-    $self->input($email);
+    $self->_set_input($email);
 
     # correct common typos # Maybe add an option for this?
     $email = $self->_autocorrect;
 
     # do validation
-    $email = $self->email_valid->address($email);
+    $email = $self->_email_valid->address($email);
     unless ($email) {
-        $self->error($self->email_valid->details);
+        $self->error($self->_email_valid->details);
         return;
     }
 
-    $self->output($email);
+    $self->_set_output($email);
     return $email;
 }
 

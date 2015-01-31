@@ -9,6 +9,10 @@ use Data::Transpose::Validator::Subrefs;
 use Data::Transpose::Validator::Group;
 use Data::Transpose::Iterator::Errors;
 
+use Moo;
+use MooX::Types::MooseLike::Base qw(:all);
+use namespace::clean;
+
 =head1 NAME
 
 Data::Transpose::Validator - Filter and validate data.
@@ -85,30 +89,50 @@ C<empty>: set it to the empty string;
 
 =cut 
 
+has stripwhite => (is => 'rw',
+                   isa => Bool,
+                   default => sub { 1 });
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = {};
-    my %defaults = (
-                    stripwhite => 1,
-                    collapse_whitespace => 0,
-                    requireall => 0,
-                    unknown => 'skip',
-                    missing => 'pass',
-                   );
-    # slurp the options, overwriting the defaults
-    while (my ($k, $v) = each %defaults) {
-        if (exists $options{$k}) {
-            $defaults{$k} = $options{$k}
-        }
-    }
+has collapse_whitespace => (is => 'rw',
+                            isa => Bool,
+                            default => sub { 0 });
 
-    $self->{options} = \%defaults;
-    $self->{success} = undef;
-    $self->{errors_iterator} = Data::Transpose::Iterator::Errors->new;
+has requireall => (is => 'rw',
+                   isa => Bool,
+                   default => sub { 0 });
 
-    bless $self, $class;
-}
+has unknown => (is => 'rw',
+                isa => Enum[qw/skip fail pass/],
+                default => sub { 'skip' });
+
+has missing => (is => 'rw',
+                isa => Enum[qw/pass undefine empty/],
+                default => sub { 'pass' });
+
+has success => (is => 'rwp',
+                isa => Maybe[Bool],
+               );
+
+has errors_iterator => (is => 'ro',
+                        default => sub {
+                            Data::Transpose::Iterator::Errors->new;
+                        });
+
+has _fields => (is => 'rw',
+                isa => HashRef,
+                default => sub { {} });
+
+has _ordering => (is => 'rw',
+                  isa => ArrayRef,
+                  default => sub { [] });
+
+has transposed_data => (is => 'rwp',
+                        isa => Maybe[HashRef]);
+
+has groups => (is => 'rwp',
+               isa => ArrayRef,
+               default => sub { [] });
+
 
 =head2 option($option, [ $value ]);
 
@@ -117,16 +141,20 @@ Accessor to the options set. With an optional argument, set that option.
   $dtv->option("requireall"); # get 
   $dtv->option(requireall => 1); # set
 
+This is another way to say $dtv->requireall(1);
+
 =cut
 
 sub option {
     my ($self, $key, $value) = @_;
-    $self->{options} = {} unless defined $self->{options};
     return unless $key;
-    if ($key and defined $value) {
-        $self->{options}->{$key} = $value;
+    my %supported = map { $_ => 1 } $self->options;
+    die "Bad option $key, should be one of " . join(" ", $self->options)
+      unless $supported{$key};
+    if (defined $value) {
+        $self->$key($value);
     }
-    return $self->{options}->{$key};
+    return $self->$key;
 }
 
 =head2 option_for_field($option, $field)
@@ -163,7 +191,12 @@ Accessor to get the list of the options
 =cut
 
 sub options {
-    return sort keys %{shift->{options}}
+    return qw/collapse_whitespace
+              missing
+              requireall
+              stripwhite
+              unknown
+             /;
 }
 
 =head2 prepare(%hash) or prepare([ {}, {}, ... ])
@@ -482,8 +515,6 @@ DEATH
         die $deprecation unless $field;
     }
 
-    $self->{fields} ||= {};
-    
     if ($args) {
         unless (ref($field) eq '') {
             die "Wrong usage, $field must be a string with the field name!\n" 
@@ -498,10 +529,10 @@ DEATH
             $self->_field_args_are_valid($field => keys %$args);
             my $obj = $self->_build_object($field, $args);
             # prevent to mix up rules.
-            if ($self->{fields}->{$field}) {
+            if ($self->_fields->{$field}) {
                 die "$field has already a validation rule!\n";
             }
-            $self->{fields}->{$field} = $obj;
+            $self->_fields->{$field} = $obj;
         }
         else {
             # raise exception to prevent bad configurations
@@ -510,16 +541,15 @@ DEATH
         # add the field to the list
         $self->_sorted_fields($field);
     }
-    return $self->{fields}->{$field}
+    return $self->_fields->{$field};
 }
 
 sub _sorted_fields {
     my ($self, $field) = @_;
-    $self->{ordering} = [] unless defined $self->{ordering};
     if ($field) {
-        push @{$self->{ordering}}, $field;
+        push @{$self->_ordering}, $field;
     }
-    return @{$self->{ordering}};
+    return @{$self->_ordering};
 }
 
 # return the sorted list of fields
@@ -548,8 +578,6 @@ Retrieve the list of the group objects scheduled for validation
 
 sub group {
     my ($self, $name, @objects) = @_;
-    # check
-    $self->{groups} ||= [];
     die "Wrong usage, first argument must be a string!" unless $name && !ref($name);
     if (@objects) {
         my @group;
@@ -565,12 +593,12 @@ sub group {
         my $group = Data::Transpose::Validator::Group->new(name => $name,
                                                            fields => \@group);
 
-        push @{ $self->{groups} }, $group;
+        push @{ $self->groups }, $group;
         # store it in the dtv object and return it
         return $group;
     }
     # retrieve
-    foreach my $g (@{ $self->{groups} }) {
+    foreach my $g (@{ $self->groups }) {
         if ($g->name eq $name) {
             return $g;
         }
@@ -578,10 +606,6 @@ sub group {
     return;
 }
 
-sub groups {
-    my $self = shift;
-    $self->{groups} ? return @{ $self->{groups} } : return;
-}
 
 =head2 transpose
 
@@ -669,7 +693,7 @@ sub transpose {
 
     # if there is no error, check the groups
     unless ($self->errors) {
-        foreach my $group ($self->groups) {
+        foreach my $group (@{$self->groups}) {
             unless ($group->is_valid) {
                 my @errors = $group->error;
                 $self->errors($group->name, \@errors);
@@ -689,16 +713,16 @@ sub transpose {
         }
     }
     # remember what we did
-    $self->transposed_data(\%output);
+    $self->_set_transposed_data(\%output);
 
     if ($self->errors) {
         # return undef if we have errors
-        $self->{success} = 0;
+        $self->_set_success(0);
         return;
     }
 
     # return the data
-    $self->{success} = 1;
+    $self->_set_success(1);
 
     return $self->transposed_data;
 }
@@ -708,29 +732,11 @@ sub transpose {
 Returns true on success, 0 on failure and undef validation
 didn't take place.
 
-=cut
-
-sub success {
-    return shift->{success};
-}
-
 =head2 transposed_data
 
 Accessor to the transposed hash. This is handy if you want to retrieve
 the filtered data after a failure (because C<transpose> will return
 undef in that case).
-
-=cut
-
-
-sub transposed_data {
-    my ($self, $hash) = @_;
-    if ($hash) {
-        $self->{transposed} = $hash;
-    }
-    return $self->{transposed};
-}
-
 
 =head2 errors
 
@@ -746,12 +752,12 @@ for a more accessible way for the errors.
 sub errors {
     my ($self, $field, $error) = @_;
     if ($error and $field) {
-        $self->{errors_iterator}->append({field => $field,
+        $self->errors_iterator->append({field => $field,
                                          errors => $error});
     }
 
-    if ($self->{errors_iterator}->count) {
-        return $self->{errors_iterator}->records;
+    if ($self->errors_iterator->count) {
+        return $self->errors_iterator->records;
     }
 
     return;
@@ -763,12 +769,6 @@ Returns error iterator.
 
 =cut
 
-sub errors_iterator {
-    my ( $self ) = @_;
-
-    return $self->{errors_iterator};
-}
-
 =head2 errors_hash
 
 Returns hash of errors.
@@ -778,13 +778,11 @@ Returns hash of errors.
 sub errors_hash {
     my ( $self ) = @_;
 
-    return $self->{errors_iterator}->errors_hash;
+    return $self->errors_iterator->errors_hash;
 }
 
 sub _reset_errors {
-    my $self = shift;
-
-    $self->{errors_iterator}->records([]);
+    shift->errors_iterator->records([]);
 }
 
 =head2 faulty_fields 
@@ -797,11 +795,11 @@ sub faulty_fields {
     my $self = shift;
     my @ffs;
 
-    while (my $err = $self->{errors_iterator}->next) {
+    while (my $err = $self->errors_iterator->next) {
         push @ffs, $err->{field};
     }
 
-    $self->{errors_iterator}->reset;
+    $self->errors_iterator->reset;
 
     return @ffs;
 }
@@ -949,12 +947,6 @@ sub _build_object {
     return $obj;
 }
 
-sub _reset_objects {
-    my $self = shift;
-    delete $self->{objects} if exists $self->{objects};
-}
-
-
 sub _strip_white {
     my ($self, $string) = @_;
     return unless defined $string;
@@ -1002,9 +994,7 @@ This is called by C<transpose> before doing any other operation
 
 sub reset_self {
     my $self = shift;
-
-    $self->{success} = undef;
-    $self->_reset_objects;
+    $self->_set_success(undef);
     $self->_reset_errors;
 }
 

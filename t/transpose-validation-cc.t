@@ -33,7 +33,7 @@ foreach my $type (keys  %$test_nums) {
     }
 }
 
-diag "Testing types";
+# diag "Testing types";
 
 $v = Data::Transpose::Validator::CreditCard->new(country => 'DE',
                                                  types => ["visa card",
@@ -45,7 +45,7 @@ foreach my $type (keys %$test_nums) {
     if ($type eq 'VISA card' or
         $type eq 'MasterCard') {
         foreach my $num (@{$test_nums->{$type}}) {
-            ok($v->is_valid($num), "$type $num is valid");
+            ok($v->is_valid($num), "$type $num is valid") or diag Dumper($v);
         }
     }
     else {
@@ -57,7 +57,7 @@ foreach my $type (keys %$test_nums) {
         
 }
 
-diag "Testing a cc form with DTV";
+# diag "Testing a cc form with DTV";
 my $dtv = Data::Transpose::Validator->new();
 $dtv->prepare(
               cc_number => {
