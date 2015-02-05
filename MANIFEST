@@ -3,10 +3,12 @@ lib/Data/Transpose.pm
 lib/Data/Transpose/EmailValid.pm
 lib/Data/Transpose/Field.pm
 lib/Data/Transpose/Group.pm
+lib/Data/Transpose/Prefix.pm
 lib/Data/Transpose/Iterator/Base.pm
 lib/Data/Transpose/Iterator/Errors.pm
 lib/Data/Transpose/Iterator/Scalar.pm
 lib/Data/Transpose/PasswordPolicy.pm
+lib/Data/Transpose/Prefix/Field.pm
 lib/Data/Transpose/Validator.pm
 lib/Data/Transpose/Validator/Base.pm
 lib/Data/Transpose/Validator/CreditCard.pm
@@ -35,6 +37,7 @@ t/pod.t
 t/transpose-email.t
 t/transpose-group.t
 t/transpose-passwordpolicy.t
+t/transpose-prefix.t
 t/transpose-simple.t
 t/transpose-unknown.t
 t/transpose-validation-base.t
