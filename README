@@ -6,7 +6,7 @@ NAME
     transposing to different field names.
 
 VERSION
-    Version 0.0011
+    Version 0.0012
 
 SYNOPSIS
         use Data::Transpose;
@@ -89,7 +89,7 @@ SUPPORT
 
 ACKNOWLEDGEMENTS
 LICENSE AND COPYRIGHT
-    Copyright 2012-2014 Stefan Hornburg (Racke).
+    Copyright 2012-2015 Stefan Hornburg (Racke).
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of either: the GNU General Public License as published

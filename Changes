@@ -1,5 +1,14 @@
 Revision history for Data::Transpose
 
+0.0012 Fri Feb  6 10:43:29 2015 CET
+
+    [ENHANCEMENTS]
+
+    * Add Data::Transpose::Prefix class (Stefan Hornburg).
+    * Migrate Data::Transpose to Moo (GH #8, Marco Pessotto).
+    * Add auto correction for email addresses with double dots
+      before top level domain (Stefan Hornburg).
+
 0.0011 Fri Dec  5 12:28:44 2014 CET
 
     [ENHANCEMENTS]
