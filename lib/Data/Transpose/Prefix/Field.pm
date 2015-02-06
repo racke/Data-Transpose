@@ -30,7 +30,7 @@ Prefix for the field name.
 
 =head1 METHODS
 
-=item target
+=head2 target
 
 Sets or get the target.
 
@@ -38,8 +38,6 @@ Sets or get the target.
 
 The return value includes the prefix, e.g.
 C<billing_email>.
-
-=back
 
 =cut
 

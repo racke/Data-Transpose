@@ -7,7 +7,17 @@ use warnings;
 
 Data::Transpose::Prefix - prefix subclass for Data::Transpose
 
-=head1 SYNOPSIS
+=head1 ATTRIBUTES
+
+=head2 prefix
+
+Prefix for field names. Required.
+
+=head1 METHODS
+
+=head2 field
+
+Overrides method from C<Data::Transpose>.
 
 =cut
 
