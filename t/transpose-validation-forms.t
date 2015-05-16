@@ -191,7 +191,7 @@ test_form (
            dtvoptions => {},
            form => {
                     mail => 'melmothx@google.it',
-                    mail2 => 'invalid+ciao@asdf-daslf.it',
+                    mail2 => 'invalid+ciao@no-mx.asdf-daslf.it',
                    },
            expected => {},
            message => "Invalid email2",
