@@ -6,7 +6,7 @@ NAME
     transposing to different field names.
 
 VERSION
-    Version 0.0012
+    Version 0.0013
 
 SYNOPSIS
         use Data::Transpose;
@@ -88,6 +88,8 @@ SUPPORT
         http://search.cpan.org/dist/Data-Transpose/
 
 ACKNOWLEDGEMENTS
+    Todd Wade for mxcheck test failures fix (GH #5, #11).
+
 LICENSE AND COPYRIGHT
     Copyright 2012-2015 Stefan Hornburg (Racke).
 

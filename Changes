@@ -1,5 +1,11 @@
 Revision history for Data::Transpose
 
+0.0013 Sun May 17 21:45:06 2015 CEST
+
+    [TESTS]
+
+    * Fix for mxcheck test failures (GH #5, #11, Todd Wade).
+
 0.0012 Fri Feb  6 10:43:29 2015 CET
 
     [ENHANCEMENTS]
