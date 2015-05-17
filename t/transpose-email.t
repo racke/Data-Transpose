@@ -26,7 +26,7 @@ my %invalid = (
     'Nour_e;mahdy@yahoo.com'                  => 'rfc822',
     'jneira@academia.usbbog.edu.co.'          => 'rfc822',
     'Ahmed Mohammed6684@gmail.com'            => 'rfc822',
-    'uwe@uwevoelker-does-not-exist.de'        => 'mxcheck',
+    'uwe@no-mx.uwevoelker-does-not-exist.de'  => 'mxcheck',
 );
 
 
