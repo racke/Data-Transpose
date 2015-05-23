@@ -29,9 +29,39 @@ our $VERSION = '0.0013';
 
 =head1 SYNOPSIS
 
-    use Data::Transpose;
+    use warnings;
+    use strict;
+    
+    use Data::Transpose::Prefix;
+    use Data::Dumper;
+    
+    my $data = {
+        first => 'John',
+        last  => 'Doe',
+        foo   => 'bar',
+    };
+    
+    my $dtp = Data::Transpose::Prefix->new(prefix => 'user.');
+    foreach my $needs_prefix ( qw(first last) ) {
+        $dtp->field( $needs_prefix );
+    }
+    
+    my $output = $dtp->transpose( $data );
+    
+    print Data::Dumper->Dump([$data, $output], [qw(data output)]);
 
-    my $tp = Data::Transpose->new;
+outputs:
+
+    $data = {
+              'first' => 'John',
+              'last' => 'Doe',
+              'foo' => 'bar'
+            };
+    $output = {
+                'user.last' => 'Doe',
+                'user.first' => 'John',
+                'foo' => 'bar'
+              };
 
 =head1 REFERENCE
 
