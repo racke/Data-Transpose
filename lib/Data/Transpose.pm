@@ -13,7 +13,10 @@ use namespace::clean;
 
 =head1 NAME
 
-Data::Transpose - Transpose, iterate, filter and validate data
+Data::Transpose - iterate, filter and validate data, and transpose to
+different field names
+
+=head1 DESCRIPTION
 
 Caters to your needs for manipulating data by different operations,
 which are filtering records, iterating records, validating and
