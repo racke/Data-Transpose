@@ -106,13 +106,19 @@ Returns value for output:
     
     $output = $group->value;
 
+With undefined argument, does not set the output to undef (because a
+group always output a string), but apply the joining.
+
+With a defined argument, does not perform the joining, but set the
+output value.
+
 =cut
 
 sub value {
     my $self = shift;
     my $token;
     
-    if (@_) {
+    if (@_ and defined($_[0])) {
         $self->_set__output(shift);
     }
     else {
