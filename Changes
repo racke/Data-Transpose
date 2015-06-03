@@ -1,5 +1,17 @@
 Revision history for Data::Transpose
 
+0.0014 Wed Jun  3 11:00:13 2015 CEST
+
+    [BUG FIXES]
+
+	* Fix stale data caused by missing input fields
+	  (GH #14, Marco Pessotto).
+
+    [DOCUMENTATION]
+
+	* Add example to synopsis and improve name and
+	  description (GH #12, #13, Todd Wade).
+
 0.0013 Sun May 17 21:45:06 2015 CEST
 
     [TESTS]
