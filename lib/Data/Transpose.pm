@@ -299,7 +299,8 @@ L<http://search.cpan.org/dist/Data-Transpose/>
 
 =head1 ACKNOWLEDGEMENTS
 
-Todd Wade for mxcheck test failures fix (GH #5, #11).
+Todd Wade for mxcheck test failures fix (GH #5, #11)
+and improvements to documentation (GH #12, #13).
 
 =head1 LICENSE AND COPYRIGHT
 
