@@ -196,7 +196,7 @@ sub transpose {
             $weed_value = $fld->value($vref->{$fld_name});
         }
         else {
-            $weed_value = $fld->value;
+            $weed_value = $fld->value(undef);
         }
 
         if ($new_name = $fld->target) {
