@@ -8,7 +8,7 @@ DESCRIPTION
     transposing to different field names.
 
 VERSION
-    Version 0.0014
+    Version 0.0015
 
 SYNOPSIS
         use warnings;

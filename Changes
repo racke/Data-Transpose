@@ -1,5 +1,11 @@
 Revision history for Data::Transpose
 
+0.0015 Sun Jul  5 11:05:00 2015 CEST
+
+    [BUG FIXES]
+
+    * Fix "repetion" typo (Stefan Hornburg).
+
 0.0014 Wed Jun  3 11:00:13 2015 CEST
 
     [BUG FIXES]
