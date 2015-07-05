@@ -392,7 +392,7 @@ sub password_has_enough_different_char {
     }
 
     if (%reportconsec) {
-	# we see if subtracting the number of total repetion, we are
+	# we see if subtracting the number of total repetition, we are
 	# still above the minimum chars.
 	my $passwdlen = $self->password_length;
 	foreach my $rep (values %reportconsec) {
@@ -416,7 +416,7 @@ sub password_has_enough_different_char {
 	$max = $v if ($v > $max);
     }
     if ($max > $maxrepeat) {
-	return [ varchars => "Found too many repetions" ];
+	return [ varchars => "Found too many repetitions" ];
     }
     return undef;
 }
