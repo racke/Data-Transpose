@@ -24,11 +24,11 @@ transposing to different field names.
 
 =head1 VERSION
 
-Version 0.0014
+Version 0.0015
 
 =cut
 
-our $VERSION = '0.0014';
+our $VERSION = '0.0015';
 
 =head1 SYNOPSIS
 
