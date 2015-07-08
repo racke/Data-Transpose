@@ -742,7 +742,7 @@ undef in that case).
 
 Accessor to set or retrieve the errors (returned as an arrayref of
 hashes). Each element has the key C<field> set to the fieldname and
-the key C<errors> holds the the error list. This, in turn, is a list
+the key C<errors> holds the error list. This, in turn, is a list
 of arrays, where the first element is the error code, and the second
 the human format set by the module (in English). See the method belows
 for a more accessible way for the errors.
