@@ -771,7 +771,30 @@ Returns error iterator.
 
 =head2 errors_hash
 
-Returns hash of errors.
+Return an hashref where each key is the name of the error field, and
+the value is an arrayref of hashrefs with two keys, C<name> and
+C<value>.
+
+Example of the returned hash:
+
+          {
+           year => [
+                    {
+                     value => 'Not a number',
+                     name => 'notanumber',
+                    },
+                    {
+                     name => 'notinteger',
+                     value => 'Not an integer',
+                    }
+                   ],
+           mail => [
+                    {
+                     value => 'Missing required field mail',
+                     name => 'required',
+                    }
+                   ],
+          }
 
 =cut
 
