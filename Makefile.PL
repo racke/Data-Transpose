@@ -23,6 +23,7 @@ WriteMakefile(
         'Moo' => 0,
         'MooX::Types::MooseLike' => 0,
         'namespace::clean' => 0,
+        'DateTime::Format::ISO8601' => 0,
     },
     META_MERGE        => {
         resources => {
