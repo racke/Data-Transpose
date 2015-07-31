@@ -12,6 +12,7 @@ lib/Data/Transpose/Prefix/Field.pm
 lib/Data/Transpose/Validator.pm
 lib/Data/Transpose/Validator/Base.pm
 lib/Data/Transpose/Validator/CreditCard.pm
+lib/Data/Transpose/Validator/DateTime.pm
 lib/Data/Transpose/Validator/EmailValid.pm
 lib/Data/Transpose/Validator/Group.pm
 lib/Data/Transpose/Validator/NumericRange.pm
@@ -35,6 +36,7 @@ t/iterator-simple.t
 t/manifest.t
 t/pod-coverage.t
 t/pod.t
+t/transpose-datetime.t
 t/transpose-email.t
 t/transpose-group.t
 t/transpose-passwordpolicy.t
