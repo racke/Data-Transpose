@@ -30,8 +30,8 @@ Data::Transpose::Validator::Subrefs Validator using custom subroutines
 
 The constructor accepts only one argument, a reference to a
 subroutine. The class will provide the variable to validate as the
-first and only argument. The subroutine is expected to return the
-variable itself on success, or a false value.
+first and only argument. The subroutine is expected to return a
+true value on success, or a false value on failure.
 
 To set a custom error, the subroutine in case of error should return 2
 elements, where the first should be undefined (see the example above).
