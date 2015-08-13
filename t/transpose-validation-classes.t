@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 108;
+use Test::More tests => 115;
 use Data::Transpose::Validator::Subrefs;
 use Data::Transpose::Validator::Base;
 use Data::Transpose::Validator::String;
@@ -32,7 +32,28 @@ my $vcr = Data::Transpose::Validator::Subrefs->new( \&custom_sub );
 ok($vcr->is_valid("H!"), "Hi! is valid");
 ok(!$vcr->is_valid("!"), "! is not");
 is($vcr->error, "Not a \\w", "error displayed correctly");
+
+sub validator_call {
+    my $field = shift;
+    if ( $field =~ /^[01]$/ ) {
+        return 1;
+    }
+    else {
+        return ( undef, "Not a boolean yes/no (1/0)" );
+    }
+}
+
+
+$vcr = Data::Transpose::Validator::Subrefs->new(call => \&validator_call);
+ok($vcr->is_valid(0), "0 is valid");
+ok($vcr->is_valid(1), "1 is valid");
+ok(!$vcr->is_valid(3), "3 is not valid");
+is($vcr->error, "Not a boolean yes/no (1/0)");
+
 undef $vcr;
+
+
+
 
 print "Testing strings\n";
 
@@ -43,6 +64,9 @@ ok($vs->is_valid("\n"), "Newline is valid");
 ok(!$vs->error, "No error");
 ok(!$vs->is_valid([]), "Arrayref is not valid");
 is($vs->error, "Not a string");
+ok($vs->is_valid("0"), '"0" is valid');
+ok(!$vs->is_valid(""), 'empty string is not valid');
+is($vs->error, "Empty string");
 undef $vs;
 
 print "Testing urls\n";
