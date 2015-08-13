@@ -20,8 +20,14 @@ Check with C<ref> if the argument is a string. Return true on success
 sub is_valid {
     my ($self, $string) = @_;
     $self->reset_errors;
-    $self->error(["undefined", "String is undefined"]) unless defined $string;
-    $self->error(["hash", "Not a string"]) unless (ref($string) eq '');
+    unless (defined $string) {
+        $self->error(["undefined", "String is undefined"]);
+        return 0;
+    }
+    unless (ref($string) eq '') {
+        $self->error(["hash", "Not a string"]);
+        return 0;
+    }
     my $length = length($string);
     $self->error(["empty", "Empty string"]) unless $length;
     $self->error ? return 0 : return $length;

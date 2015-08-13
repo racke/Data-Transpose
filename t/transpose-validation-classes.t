@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 115;
+use Test::More tests => 117;
 use Data::Transpose::Validator::Subrefs;
 use Data::Transpose::Validator::Base;
 use Data::Transpose::Validator::String;
@@ -67,6 +67,8 @@ is($vs->error, "Not a string");
 ok($vs->is_valid("0"), '"0" is valid');
 ok(!$vs->is_valid(""), 'empty string is not valid');
 is($vs->error, "Empty string");
+ok(!$vs->is_valid(undef), "undef is invalid");
+is($vs->error, "String is undefined");
 undef $vs;
 
 print "Testing urls\n";
