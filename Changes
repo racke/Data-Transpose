@@ -1,5 +1,27 @@
 Revision history for Data::Transpose
 
+0.0020 Sun Aug 16 10:53:30 2015 WEST
+
+    [ENHANCEMENTS]
+
+    * Add DataTime validator (Sam Batschelet, GH #16, #18).
+
+    [BUG FIXES]
+
+    * Avoid double errors on undefined strings in String validator
+      (Marco Pessotto).
+
+    [DOCUMENTATION]
+
+    * Improve clarity in Data::Transpose::Validator::Subrefs
+      (Peter Mottram, GH #19).
+    * Remove superfluous "the" from POD for the Validator class
+      (Stefan Hornburg).
+
+    [TESTS]
+
+    * Add tests and documentation for errors_hash method.
+
 0.0015 Sun Jul  5 11:05:00 2015 CEST
 
     [BUG FIXES]
