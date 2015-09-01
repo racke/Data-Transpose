@@ -117,7 +117,7 @@ sub is_valid {
     # do validation
     $email = $self->_email_valid->address($email);
     unless ($email) {
-        $self->error($self->_email_valid->details);
+        $self->error("Email address not valid: " . $self->_email_valid->details);
         return;
     }
 

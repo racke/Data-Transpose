@@ -40,7 +40,7 @@ while (my ($input, $output) = each %valid) {
 
 while (my ($input, $reason) = each %invalid) {
     ok(! $email->is_valid($input), "$input is invalid");
-    is($email->reason, $reason, "$input ($reason)");
+    like($email->reason, qr/$reason/, "$input ($reason)");
 }
 
 done_testing;

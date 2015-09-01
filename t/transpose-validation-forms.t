@@ -168,7 +168,7 @@ test_form (
            form => {mail => "invalid+ciao\@asdf_daslf"},
            expected => {},
            message => "Invalid email",
-           error_hash => { mail => [ 'fqdn' ] },
+           error_hash => { mail => [ 'Email address not valid: fqdn' ] },
            fail => 1,
            debug => 0,
           );
@@ -181,7 +181,7 @@ test_form (
                    },
            expected => {},
            message => "Invalid email2",
-           error_hash => { mail2 => [ 'fqdn' ] },
+           error_hash => { mail2 => [ 'Email address not valid: fqdn' ] },
            fail => 1,
            debug => 0,
           );
@@ -195,7 +195,7 @@ test_form (
                    },
            expected => {},
            message => "Invalid email2",
-           error_hash => { mail2 => [ 'mxcheck' ] },
+           error_hash => { mail2 => [ 'Email address not valid: mxcheck' ] },
            fail => 1,
            debug => 0,
           );
