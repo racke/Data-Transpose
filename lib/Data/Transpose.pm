@@ -304,7 +304,7 @@ and improvements to documentation (GH #12, #13).
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2012-2015 Stefan Hornburg (Racke).
+Copyright 2012-2016 Stefan Hornburg (Racke).
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
