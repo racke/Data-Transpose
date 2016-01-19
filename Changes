@@ -1,5 +1,16 @@
 Revision history for Data::Transpose
 
+0.0021 Tue Jan 19 11:49:42 2016 CET
+
+    [BUG FIXES]
+
+    * Do not rely on unknown domains for checking mail validation
+      (Marco Pessotto, GH #24).
+
+    [TESTS]
+
+    * Add Travis CI configuration file (Stefan Hornburg/Racke).
+
 0.0020 Sun Aug 16 10:53:30 2015 WEST
 
     [ENHANCEMENTS]
