@@ -45,14 +45,14 @@ my $schema = [
 print "Testing a simple form. The unknown option is to the default, so submit will be ignored\n";
 
 my $form = {
-            email => ' ciao@hello.it ',
+            email => ' ciao@linuxia.de ',
             password => ' 4Horses5_Staple ',
             country => ' Germany ',
             submit => 1,
             };
 
 my $expected = {
-                email => 'ciao@hello.it',
+                email => 'ciao@linuxia.de',
                 password => '4Horses5_Staple',
                 country => 'Germany',
                };
