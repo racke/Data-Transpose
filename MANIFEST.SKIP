@@ -3,6 +3,7 @@
 \.tar.gz$
 .git
 .gitignore
+.travis.yml
 blib
 MYMETA\.json
 MYMETA\.yml
