@@ -1,5 +1,12 @@
 Revision history for Data::Transpose
 
+0.0022 Wed Feb 10 21:58:15 2016 CET
+
+    [BUG FIXES]
+
+    * Remove obsolete test credit card numbers for Discover cards
+      (Slaven Rezić, Marco Pessotto, GH #25, #26).
+
 0.0021 Tue Jan 19 11:49:42 2016 CET
 
     [BUG FIXES]
