@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 116;
+use Test::More tests => 104;
 use Data::Transpose::Validator::CreditCard;
 use Data::Transpose::Validator;
 use Data::Dumper;
@@ -29,7 +29,7 @@ foreach my $type (keys  %$test_nums) {
         ok(!$v->is_valid($num), "$num is not valid");
         my $errorstring = $v->error;
         ok($errorstring, $errorstring || "failed");
-        ok($errorstring =~ m/^\Q$type\E \(invalid\)/, "$type => $errorstring");
+        like($errorstring, qr/^\Q$type\E \(invalid\)/, "$type => $errorstring");
     }
 }
 
