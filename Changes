@@ -1,5 +1,15 @@
 Revision history for Data::Transpose
 
+0.0023 Mon Oct 31 12:06:53 2016 CET
+
+    [ENHANCEMENTS]
+
+    * Move build dependencies to BUILD_REQUIRES (Peter Mottram, GH #28).
+
+    [TESTS]
+
+    * Add coverage to Travis and more tests (Lisa Hare, GH #27).
+
 0.0022 Wed Feb 10 21:58:15 2016 CET
 
     [BUG FIXES]
