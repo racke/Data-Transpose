@@ -11,6 +11,8 @@ use Moo;
 use MooX::Types::MooseLike::Base qw(:all);
 use namespace::clean;
 
+=encoding utf8
+
 =head1 NAME
 
 Data::Transpose - iterate, filter and validate data, and transpose to
