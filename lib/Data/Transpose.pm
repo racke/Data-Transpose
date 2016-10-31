@@ -299,8 +299,12 @@ L<http://search.cpan.org/dist/Data-Transpose/>
 
 =head1 ACKNOWLEDGEMENTS
 
-Todd Wade for mxcheck test failures fix (GH #5, #11)
-and improvements to documentation (GH #12, #13).
+Peter Mottram (GH #19, #28).
+Lisa Hare (GH #27).
+Marco Pessotto (GH #6, #7, #14, #24, #26).
+Slaven Rezić (GH #25).
+Sam Batschelet (GH #16, #18).
+Todd Wade (GH #5, #11, #12, #13).
 
 =head1 LICENSE AND COPYRIGHT
 
