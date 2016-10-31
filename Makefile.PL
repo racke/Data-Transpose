@@ -12,9 +12,11 @@ WriteMakefile(
       ? ('LICENSE'=> 'perl')
       : ()),
     PL_FILES            => {},
-    PREREQ_PM => {
+    BUILD_REQUIRES   => {
         'Test::More' => 0,
         'Test::Warn' => 0,
+    },
+    PREREQ_PM => {
         'Email::Valid' => 0,
         'Try::Tiny' => 0,
         'Module::Load' => 0,
