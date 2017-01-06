@@ -20,6 +20,7 @@ lib/Data/Transpose/Validator/PasswordPolicy.pm
 lib/Data/Transpose/Validator/Set.pm
 lib/Data/Transpose/Validator/String.pm
 lib/Data/Transpose/Validator/Subrefs.pm
+lib/Data/Transpose/Validator/TrackingNumber.pm
 lib/Data/Transpose/Validator/URL.pm
 Makefile.PL
 MANIFEST			This list of files
@@ -48,6 +49,7 @@ t/transpose-validation-classes.t
 t/transpose-validation-datetime.t
 t/transpose-validation-forms.t
 t/transpose-validation-objects.t
+t/transpose-validation-tracking-numbers.t
 t/transpose-validation.t
 t/transpose-validator-field.t
 t/transpose-validator-options.t
