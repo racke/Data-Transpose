@@ -3,6 +3,7 @@ package Data::Transpose::Validator::TrackingNumber;
 use strict;
 use warnings;
 use Moo;
+use Types::Standard qw/ArrayRef Str/;
 extends 'Data::Transpose::Validator::Base';
 
 =head1 NAME
@@ -18,6 +19,15 @@ Data::Transpose::Validator::TrackingNumber - Validator for Tracking numbers
 
 This module validates the tracking numbers for commonly used carriers.
 
+=head1 ACCESSORS
+
+=head2 carriers
+
+An arrayref of carriers. See "SUPPORTED CARRIERS" for the list of
+available values.
+
+Default to all known carriers.
+
 =head1 METHODS
 
 =head2 is_valid($number)
@@ -31,10 +41,19 @@ false otherwise.
 
 =item DHL
 
+=item UPS
+
+=item Hermes
+
+=item DPD
+
 =back
 
 =cut
 
+has carriers => (is => 'rw',
+                 isa => ArrayRef[Str],
+                 default => sub { [qw/UPS Hermes DPD DHL/] });
 
 sub is_valid {
     my ($self, $string) = @_;
@@ -43,18 +62,35 @@ sub is_valid {
         $self->error(["undefined", "String is undefined"]);
         return 0;
     }
-    if ($string =~ m/\A
-                     (
-                         # DHL
-                         [0-9]{12} |
-                         [0-9a-zA-Z]{16} |
-                         [0-9a-zA-Z]{20}
-                     )\z/x) {
-        return $1;
+    my $valid;
+
+    my %checks = (
+                  dpd => qr/([0-9A-Za-z]{14})/x,
+                  ups => qr/([0-9A-Za-z]{18})/x,
+                  hermes => qr/([0-9A-Za-z]{14})/x,
+                  dhl => qr/(
+                                [0-9]{12} |
+                                [0-9a-zA-Z]{16} |
+                                [0-9a-zA-Z]{20}
+                            )/x,
+                 );
+  CARRIER:
+    foreach my $carrier (@{$self->carriers}) {
+        my $name = lc($carrier);
+        $name =~ s/\s/_/g;
+        my $re = $checks{$name} or die "Unknown carrier $carrier";
+        if ($string =~ m/\A$checks{$name}\z/) {
+            $valid = $1;
+            last CARRIER;
+        }
+    }
+    if ($valid) {
+        return $valid;
     }
     else {
         $self->error(["notrackingnumber",
-                      "Tracking number is not valid"]);
+                      "Tracking number is not valid for " . join(' ', @{$self->carriers})
+                     ]);
         return undef;
     }
 }
