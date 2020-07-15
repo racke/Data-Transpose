@@ -15,7 +15,9 @@ Data::Transpose::Validator::URL - Validate http(s) urls
 
 my $urlre = qr/(https?:\/\/)[\w\-\.]+\.(\w+) # domain
 	       (:\d+)* # the port
-	       (\/[\w:\.,;\?'\\\+&%\$\#=~\@!\-\/]+)*
+	       (\/
+               [\w:\.,;\?'\\\+&%\$\#=~\@!\-]*
+           )*
 	      /x;
 
 
