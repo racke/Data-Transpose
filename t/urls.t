@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 11;
+use Test::More tests => 9;
 use Data::Transpose::Validator::URL;
 
 my $v = Data::Transpose::Validator::URL->new;
@@ -19,9 +19,3 @@ foreach my $url ('random.org',
                 'asdfa://test.org',) {
     ok !$v->is_valid($url), "$url is not valid";
 }
-
-
-
-ok $v->is_valid('http://test.org');
-ok $v->is_valid('https://test.org');
-
