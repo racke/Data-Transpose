@@ -52,3 +52,4 @@ t/transpose-validation.t
 t/transpose-validator-field.t
 t/transpose-validator-options.t
 t/undefined-fields.t
+t/urls.t
