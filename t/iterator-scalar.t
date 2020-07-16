@@ -27,9 +27,6 @@ $iter->key('pippo');
 
 is_deeply($iter->next, { pippo => 555 });
 
-
-diag "Checking synopsis";
-
 $iter = Data::Transpose::Iterator::Scalar->new([1, 2, 3, 4, 5]);
 is_deeply $iter->next, { value => 1 };
 # return { value => 1 };

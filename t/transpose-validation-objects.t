@@ -12,7 +12,6 @@ $dtv->field(email => { required => 0 });
 my $result = $dtv->transpose($form);
 ok $result;
 
-diag "Testing overriding with object method";
 $dtv = Data::Transpose::Validator->new();
 $dtv->field(email => { required => 0 })->required(1);
 ok $dtv->field('email')->required; # return true
